@@ -614,7 +614,7 @@ export default function Portfolio() {
     <div className="text-center relative">
       <div className="relative z-10">
         <div className="flex items-center justify-center mb-6">
-          <p className="text-5xl md:text-6xl text-white-300 font-semibold">Hello, I'm Jack</p>
+          <p className="text-5xl md:text-6xl text-white font-semibold">Hello, I'm Jack</p>
         </div>
 
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-8 leading-tight">
