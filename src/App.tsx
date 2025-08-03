@@ -660,7 +660,7 @@ export default function Portfolio() {
     <img
       src="/assets/rainbowgithub.png"
       alt="GitHub"
-      className="h-12 w-12 object-contain"
+      className="h-36 w-36 object-contain"
       width={48}
       height={48}
       draggable={false}
