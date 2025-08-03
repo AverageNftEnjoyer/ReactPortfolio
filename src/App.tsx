@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Github, Linkedin, FileText, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { motion } from "framer-motion"; 
 
 export default function Portfolio() {
   const [typingText, setTypingText] = useState("")
@@ -527,6 +528,21 @@ export default function Portfolio() {
           background: #fbbf24;
           box-shadow: 0 0 8px rgba(251, 191, 36, 0.9);
         }
+          .nav-underline {
+    display: block;
+    height: 2px;
+    width: 0;
+    margin-top: 3px;
+    background: linear-gradient(90deg, #3b82f6 0%, #ec4899 100%);
+    border-radius: 1px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+.group:hover .nav-underline,
+.group:focus .nav-underline {
+  width: 100%;
+}
+
 
         /* Pink star positions and sizes */
         .pink-star-1 { top: 8%; left: 12%; width: 2px; height: 2px; animation: float 3.8s infinite; animation-delay: 0.2s; }
@@ -573,40 +589,57 @@ export default function Portfolio() {
 
       <div className="relative z-10">
         {/* Navigation */}
-        <nav className="fixed top-0 w-full z-50 bg-black/20 backdrop-blur-md border-b border-white/10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-4">
-              <div>
-                <button
-                  className="text-white hover:text-purple-400 transition-colors duration-300 bg-transparent border-none cursor-pointer text-base"
-                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                >
-                  Home
-                </button>
-              </div>
-              <div className="flex space-x-8">
-                <button
-                  className="text-white hover:text-purple-400 transition-colors duration-300 bg-transparent border-none cursor-pointer text-base"
-                  onClick={() => scrollToSection(aboutRef)}
-                >
-                  About
-                </button>
-                <button
-                  className="text-white hover:text-purple-400 transition-colors duration-300 bg-transparent border-none cursor-pointer text-base"
-                  onClick={() => scrollToSection(projectsRef)}
-                >
-                  Projects
-                </button>
-                <button
-                  className="text-white hover:text-purple-400 transition-colors duration-300 bg-transparent border-none cursor-pointer text-base"
-                  onClick={() => scrollToSection(footerRef)}
-                >
-                  Contact Me
-                </button>
-              </div>
-            </div>
-          </div>
-        </nav>
+       <nav className="w-full z-50 flex justify-center pt-4 px-4">
+  <motion.div
+    className="p-2 rounded-2xl bg-black/20 backdrop-blur-lg border border-white/10 shadow-lg relative overflow-hidden"
+    initial="initial"
+    whileHover="hover"
+  >
+    <ul className="flex items-center gap-1 sm:gap-2 relative z-10">
+      {/* Home */}
+      <li className="relative">
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="nav-link px-3 py-2 sm:px-4 text-sm sm:text-base text-gray-300 hover:text-white transition-colors rounded-xl border-none cursor-pointer bg-transparent flex flex-col items-center group"
+        >
+          Home
+          <span className="nav-underline group-hover:w-full"></span>
+        </button>
+      </li>
+      {/* About */}
+      <li className="relative">
+        <button
+          onClick={() => scrollToSection(aboutRef)}
+          className="nav-link px-3 py-2 sm:px-4 text-sm sm:text-base text-gray-300 hover:text-white transition-colors rounded-xl border-none cursor-pointer bg-transparent flex flex-col items-center group"
+        >
+          About
+          <span className="nav-underline group-hover:w-full"></span>
+        </button>
+      </li>
+      {/* Projects */}
+      <li className="relative">
+        <button
+          onClick={() => scrollToSection(projectsRef)}
+          className="nav-link px-3 py-2 sm:px-4 text-sm sm:text-base text-gray-300 hover:text-white transition-colors rounded-xl border-none cursor-pointer bg-transparent flex flex-col items-center group"
+        >
+          Projects
+          <span className="nav-underline group-hover:w-full"></span>
+        </button>
+      </li>
+      {/* Contact Me */}
+      <li className="relative">
+        <button
+          onClick={() => scrollToSection(footerRef)}
+          className="nav-link px-3 py-2 sm:px-4 text-sm sm:text-base text-gray-300 hover:text-white transition-colors rounded-xl border-none cursor-pointer bg-transparent flex flex-col items-center group"
+        >
+          Contact Me
+          <span className="nav-underline group-hover:w-full"></span>
+        </button>
+      </li>
+    </ul>
+  </motion.div>
+</nav>
+
 
      {/* Hero Section */}
 <section className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
