@@ -634,54 +634,54 @@ export default function Portfolio() {
           </p>
         </div>
 
-        {/* Social Icons: Stack vertically on mobile */}
-        <div className="flex flex-col items-center space-y-6 md:flex-row md:justify-center md:space-x-6 md:space-y-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-16 h-16 p-0 hover:scale-110 transition-all duration-300"
-            onClick={() => window.open("https://www.linkedin.com/in/jack-pastor-816157223/", "_blank")}
-          >
-            <img
-              src="/assets/linkedin.png"
-              alt="LinkedIn"
-              className="h-12 w-12 object-contain"
-              width={48}
-              height={48}
-              draggable={false}
-            />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-16 h-16 p-0 hover:scale-110 transition-all duration-300"
-            onClick={() => window.open("https://github.com/AverageNftEnjoyer", "_blank")}
-          >
-            <img
-              src="/assets/rainbowgithub.png"
-              alt="GitHub"
-              className="h-36 w-36 object-contain"
-              width={68}
-              height={68}
-              draggable={false}
-            />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-16 h-16 p-0 hover:scale-110 transition-all duration-300"
-            onClick={() => window.open("/assets/JackPastorResume.pdf", "_blank")}
-          >
-            <img
-              src="/assets/colorfulresume.png"
-              alt="Resume"
-              className="h-12 w-12 object-contain"
-              width={48}
-              height={48}
-              draggable={false}
-            />
-          </Button>
-        </div>
+        {/* Social Icons: Always row, centered, with spacing */}
+<div className="flex flex-row items-center justify-center space-x-6 mt-6">
+  <Button
+    variant="ghost"
+    size="icon"
+    className="w-16 h-16 p-0 hover:scale-110 transition-all duration-300"
+    onClick={() => window.open("https://www.linkedin.com/in/jack-pastor-816157223/", "_blank")}
+  >
+    <img
+      src="/assets/linkedin.png"
+      alt="LinkedIn"
+      className="h-12 w-12 object-contain"
+      width={48}
+      height={48}
+      draggable={false}
+    />
+  </Button>
+  <Button
+    variant="ghost"
+    size="icon"
+    className="w-16 h-16 p-0 hover:scale-110 transition-all duration-300"
+    onClick={() => window.open("https://github.com/AverageNftEnjoyer", "_blank")}
+  >
+    <img
+      src="/assets/rainbowgithub.png"
+      alt="GitHub"
+      className="h-12 w-12 object-contain"
+      width={48}
+      height={48}
+      draggable={false}
+    />
+  </Button>
+  <Button
+    variant="ghost"
+    size="icon"
+    className="w-16 h-16 p-0 hover:scale-110 transition-all duration-300"
+    onClick={() => window.open("/assets/JackPastorResume.pdf", "_blank")}
+  >
+    <img
+      src="/assets/colorfulresume.png"
+      alt="Resume"
+      className="h-12 w-12 object-contain"
+      width={48}
+      height={48}
+      draggable={false}
+    />
+  </Button>
+</div>
       </div>
     </div>
   </div>
