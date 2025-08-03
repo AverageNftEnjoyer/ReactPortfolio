@@ -32,34 +32,32 @@ export default function Portfolio() {
     return () => clearInterval(timer)
   }, [])
 
-  // Scroll animation effect
-  useEffect(() => {
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: "0px 0px -50px 0px",
-    }
+useEffect(() => {
+  const observerOptions = {
+    threshold: 0.3, // Or 0.5 if you want it to reveal further down
+    rootMargin: "0px 0px -50px 0px",
+  };
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("animate-slide-in-up")
-          entry.target.classList.remove("opacity-0", "translate-y-8")
-        } else {
-          entry.target.classList.remove("animate-slide-in-up")
-          entry.target.classList.add("opacity-0", "translate-y-8")
-        }
-      })
-    }, observerOptions)
-
-    const refs = [aboutRef, experienceRef, certificationsRef, projectsRef, skillsRef]
-    refs.forEach((ref) => {
-      if (ref.current) {
-        observer.observe(ref.current)
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting && !entry.target.classList.contains("animated-once")) {
+        entry.target.classList.add("animate-slide-in-up", "animated-once");
+        entry.target.classList.remove("opacity-0", "translate-y-8");
       }
-    })
+    });
+  }, observerOptions);
 
-    return () => observer.disconnect()
-  }, [])
+  // Make sure About Me is being observed!
+  const refs = [aboutRef, experienceRef, certificationsRef, projectsRef, skillsRef];
+  refs.forEach((ref) => {
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+  });
+
+  return () => observer.disconnect();
+}, []);
+
 
   // Smooth scroll function
   const scrollToSection = (ref: React.RefObject<HTMLDivElement>) => {
@@ -192,29 +190,28 @@ export default function Portfolio() {
         <div className="floating-star hero-star-14"></div>
         <div className="floating-star hero-star-15"></div>
 
-        {/* Shooting Stars */}
-        <div className="shooting-star shooting-star-1"></div>
-        <div className="shooting-star shooting-star-2"></div>
-        <div className="shooting-star shooting-star-4"></div>
-        {/* Additional Hero Shooting Stars */}
-        <div className="shooting-star hero-shooting-star-1"></div>
-        <div className="shooting-star hero-shooting-star-2"></div>
+       {/* Shooting Stars */}
+<div className="shooting-star shooting-star-1"></div>
+{/* Hero Shooting Star */}
+<div className="shooting-star hero-shooting-star-1"></div>
+
       </div>
 
       <style>{`
         @keyframes slide-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(2rem);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-slide-in-up {
-          animation: slide-in-up 0.6s ease-out forwards;
-        }
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slide-in-up {
+  animation: slide-in-up 0.6s ease-out forwards;
+}
+
 
         @keyframes aurora {
           0%, 100% { 
@@ -450,63 +447,46 @@ export default function Portfolio() {
           }
         }
 
-        .shooting-star {
-          position: absolute;
-          width: 8px;
-          height: 8px;
-          background: #ffa500;
-          border-radius: 50%;
-          box-shadow: 0 0 20px #ffa500, 0 0 40px #ff8c00, 0 0 60px rgba(255, 165, 0, 0.8);
-        }
+      .shooting-star {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #fbbf24;
+  border-radius: 50%;
+  box-shadow: 0 0 12px #fbbf24, 0 0 20px #fde68a;
+  opacity: 0.75;
+}
 
-        .shooting-star::before {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 40px;
-          height: 2px;
-          background: linear-gradient(90deg, transparent, #ffa500, #ff8c00, transparent);
-          transform: translate(-50%, -50%) rotate(-45deg);
-          border-radius: 2px;
-          box-shadow: 0 0 10px rgba(255, 165, 0, 0.6);
-          opacity: 0.8;
-        }
+.shooting-star::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 22px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #fbbf24, transparent);
+  transform: translate(-50%, -50%) rotate(-45deg);
+  border-radius: 2px;
+  box-shadow: none;
+  opacity: 0.5;
+}
+
+
 
         .shooting-star-1 {
-          top: 20%;
-          left: 10%;
-          animation: shootingStarTopLeft 4s infinite;
-          animation-delay: 10s;
-        }
+  top: 20%;
+  left: 10%;
+  animation: shootingStarTopLeft 12s infinite;
+  animation-delay: 2s;
+}
 
-        .shooting-star-2 {
-          top: 30%;
-          right: 10%;
-          animation: shootingStarTopRight 5s infinite;
-          animation-delay: 18s;
-        }
+.hero-shooting-star-1 {
+  top: 35%;
+  left: 5%;
+  animation: shootingStarTopLeft 16s infinite;
+  animation-delay: 1s;
+}
 
-        .shooting-star-4 {
-          bottom: 25%;
-          right: 20%;
-          animation: shootingStarBottomRight 5.5s infinite;
-          animation-delay: 17s;
-        }
-
-        .hero-shooting-star-1 {
-          top: 35%;
-          left: 5%;
-          animation: shootingStarTopLeft 3.5s infinite;
-          animation-delay: 13.5s;
-        }
-
-        .hero-shooting-star-2 {
-          top: 45%;
-          right: 8%;
-          animation: shootingStarTopRight 4s infinite;
-          animation-delay: 10s;
-        }
 
         .floating-star-pink {
           position: absolute;
@@ -642,13 +622,14 @@ export default function Portfolio() {
 
 
      {/* Hero Section */}
-<section className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+<section className="flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-20 sm:pt-32 pb-32 relative overflow-hidden">
   <div className="max-w-7xl mx-auto w-full">
     <div className="text-center relative">
       <div className="relative z-10">
-        <div className="flex items-center justify-center mb-6">
-          <p className="text-5xl md:text-6xl text-white font-semibold">Hello, I'm Jack</p>
-        </div>
+        <div className="flex items-center justify-center mb-2">
+  <p className="text-5xl md:text-6xl text-white font-semibold">Hello, I'm Jack</p>
+</div>
+
 
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-8 leading-tight">
           <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-teal-300 bg-clip-text text-transparent inline-block">
@@ -662,9 +643,10 @@ export default function Portfolio() {
 
         {/* Typing Animation: Always under main text */}
         <div className="mb-4 md:mb-8">
-          <p className="text-2xl md:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 font-mono">
-            {typingText}
+          <p className="text-2xl md:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 font-mono whitespace-nowrap">
+             {typingText}
           </p>
+
         </div>
 
         {/* Social Icons: Always row, centered, with spacing */}
@@ -723,15 +705,17 @@ export default function Portfolio() {
 
 
         {/* About Section */}
-        <section
-          id="about"
-          ref={aboutRef}
-          className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8 transition-all duration-600"
-        >
+     <section
+  id="about"
+  ref={aboutRef}
+  className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8 transition-all duration-600"
+>
+
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
               <p className="text-gray-400 text-lg mb-2">Get To Know More</p>
               <h2 className="text-4xl md:text-5xl font-bold text-white">About Me</h2>
+            <div className="w-16 h-1 bg-white mx-auto mt-2"></div>
             </div>
 
             <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -762,7 +746,7 @@ export default function Portfolio() {
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-white/5 border-white/10 hover:bg-white/10 hover:border-purple-500/30 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/60">
+                  <Card className="bg-white/5 border-white/10 hover:bg-white/10 hover:border-orange-500/30 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-orange-500/60">
                     <CardContent className="p-6 text-center">
                       <div className="w-12 h-12 mx-auto mb-4 bg-blue-500/20 rounded-full flex items-center justify-center">
                         <span className="text-2xl">🎓</span>
@@ -796,131 +780,178 @@ export default function Portfolio() {
           </div>
         </section>
 
-        {/* Professional Experience Section */}
-        <section
-          ref={experienceRef}
-          className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8 transition-all duration-600"
-        >
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-teal-300 bg-clip-text text-transparent mb-2">
-  Professional Experience
-</h2>
-<div className="w-16 h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-teal-300 mx-auto"></div>
+       {/* Professional Experience Section */}
+<section
+  ref={experienceRef}
+  className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8 transition-all duration-600"
+>
+  <div className="max-w-7xl mx-auto">
+    <div className="text-center mb-12">
+      <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-teal-300 bg-clip-text text-transparent mb-2">
+        Professional Experience
+      </h2>
+      <div className="w-16 h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-teal-300 mx-auto"></div>
+    </div>
 
+    <div className="space-y-8 max-w-5xl mx-auto">
+      {/* Experience Card 1 */}
+      <Card className="bg-white/5 border border-blue-500/30 hover:bg-white/10 hover:border-green-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/60 group">
+        <CardContent className="p-8 relative">
+          {/* External link icon */}
+          <a
+            href="https://www.wesco.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute top-4 right-4 z-30 hover:scale-110 transition-transform text-gray-400 hover:text-white"
+            aria-label="Visit company website"
+          >
+            <ExternalLink className="w-5 h-5" />
+          </a>
+          <div className="flex items-start space-x-6">
+            {/* LOGO ONLY, NO BOX */}
+            <div className="w-16 h-16 flex items-center justify-center">
+              <img
+                src="/assets/WESCO.png"
+                alt="WESCO logo"
+                className="w-10 h-10 object-contain"
+                width={40}
+                height={40}
+                draggable={false}
+              />
             </div>
-
-            <div className="space-y-8 max-w-5xl mx-auto">
-              {/* Experience Card 1 */}
-              <Card className="bg-white/5 border border-blue-500/30 hover:bg-white/10 hover:border-blue-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/60 group">
-                <CardContent className="p-8">
-                  <div className="flex items-start space-x-6">
-                    <div className="w-16 h-16 bg-green-500/20 rounded-lg flex items-center justify-center group-hover:bg-green-500/30 transition-colors duration-300">
-                      <div className="w-12 h-12 bg-green-500 rounded-md flex items-center justify-center">
-                        <span className="text-white text-lg font-bold">⚡</span>
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-white font-bold text-2xl mb-2">IT & Digital Associate</h3>
-                      <p className="text-green-400 text-lg mb-2">WESCO</p>
-                      <p className="text-gray-400 text-sm mb-4">June 2025 - Current</p>
-                      <ul className="space-y-2 text-gray-300">
-                        <li className="flex items-start">
-                          <span className="text-green-400 mr-3 mt-1">•</span>
-                          <span>Integrated enterprise processes to optimize workflows</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-green-400 mr-3 mt-1">•</span>
-                          <span>Developed cloud-based solutions using Microsoft Azure</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-green-400 mr-3 mt-1">•</span>
-                          <span>Automated AI/ML model training workflows with Azure OpenAI</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-green-400 mr-3 mt-1">•</span>
-                          <span>Worked within Oracle to increase DDP performence</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Experience Card 2 */}
-              <Card className="bg-white/5 border border-teal-500/30 hover:bg-white/10 hover:border-teal-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-teal-500/60 group">
-                <CardContent className="p-8">
-                  <div className="flex items-start space-x-6">
-                    <div className="w-16 h-16 bg-teal-500/20 rounded-lg flex items-center justify-center group-hover:bg-teal-500/30 transition-colors duration-300">
-                      <div className="w-12 h-12 bg-teal-500 rounded-md flex items-center justify-center">
-                        <span className="text-white text-lg font-bold">💻</span>
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-white font-bold text-2xl mb-2">Data Engineering Intern</h3>
-                      <p className="text-green-400 text-lg mb-2">WESCO</p>
-                      <p className="text-gray-400 text-sm mb-4">May 2024 - October 2024</p>
-                      <ul className="space-y-2 text-gray-300">
-                        <li className="flex items-start">
-                          <span className="text-cyan-400 mr-3 mt-1">•</span>
-                          <span>Developed over 60 complex SQL queries to extract, manipulate, and analyze large datasets.</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-cyan-400 mr-3 mt-1">•</span>
-                          <span>Conducted data quality assessments to identify and resolve data inconsistencies within the data lake.</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-cyan-400 mr-3 mt-1">•</span>
-                          <span>Utilized Power BI to visualize analytics and provide data driven insights.</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-cyan-400 mr-3 mt-1">•</span>
-                          <span>Migrated infrastructure to from legacy to Databricks</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Experience Card 3 */}
-              <Card className="bg-white/5 border border-purple-500/30 hover:bg-white/10 hover:border-purple-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/60 group">
-                <CardContent className="p-8">
-                  <div className="flex items-start space-x-6">
-                    <div className="w-16 h-16 bg-purple-500/20 rounded-lg flex items-center justify-center group-hover:bg-purple-500/30 transition-colors duration-300">
-                      <div className="w-12 h-12 bg-purple-500 rounded-md flex items-center justify-center">
-                        <span className="text-white text-lg font-bold">🚀</span>
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-white font-bold text-2xl mb-2">Blockchain Consultant</h3>
-                      <p className="text-purple-400 text-lg mb-2">Kingdom NFT</p>
-                      <p className="text-gray-400 text-sm mb-4">March 2021 - December 2023</p>
-                      <ul className="space-y-2 text-gray-300">
-                        <li className="flex items-start">
-                          <span className="text-purple-400 mr-3 mt-1">•</span>
-                          <span>Advised over 800 clients on NFT market trends, investment opportunities, and digital asset management to optimize their portfolios.</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-purple-400 mr-3 mt-1">•</span>
-                          <span>Developed and implemented innovative strategies for upcoming NFT mints, significantly increasing client visibility, sales and success.</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-purple-400 mr-3 mt-1">•</span>
-                          <span>Facilitated over $350,000 in WEB-3 transactions across multiple blockchains within two years.</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-purple-400 mr-3 mt-1">•</span>
-                          <span>Optimized performance and profitability standards</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="flex-1">
+              <h3 className="text-white font-bold text-2xl mb-2">IT & Digital Associate</h3>
+              <p className="text-green-400 text-lg mb-2">WESCO</p>
+              <p className="text-gray-400 text-sm mb-4">June 2025 - Current</p>
+              <ul className="space-y-2 text-gray-300">
+                <li className="flex items-start">
+                  <span className="text-green-400 mr-3 mt-1">•</span>
+                  <span>Integrated enterprise processes to optimize workflows</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-400 mr-3 mt-1">•</span>
+                  <span>Developed cloud-based solutions using Microsoft Azure</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-400 mr-3 mt-1">•</span>
+                  <span>Automated AI/ML model training workflows with Azure OpenAI</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-400 mr-3 mt-1">•</span>
+                  <span>Worked within Oracle to increase DDP performence</span>
+                </li>
+              </ul>
             </div>
           </div>
-        </section>
+        </CardContent>
+      </Card>
+
+      {/* Experience Card 2 */}
+      <Card className="bg-white/5 border border-teal-500/30 hover:bg-white/10 hover:border-teal-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-teal-500/60 group">
+        <CardContent className="p-8 relative">
+          {/* External link icon */}
+          <a
+            href="https://www.wesco.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute top-4 right-4 z-30 hover:scale-110 transition-transform text-gray-400 hover:text-white"
+            aria-label="Visit company website"
+          >
+            <ExternalLink className="w-5 h-5" />
+          </a>
+          <div className="flex items-start space-x-6">
+            {/* LOGO ONLY, NO BOX */}
+            <div className="w-16 h-16 flex items-center justify-center">
+              <img
+                src="/assets/WESCO.png"
+                alt="WESCO logo"
+                className="w-10 h-10 object-contain"
+                width={40}
+                height={40}
+                draggable={false}
+              />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-white font-bold text-2xl mb-2">Data Engineering Intern</h3>
+              <p className="text-green-400 text-lg mb-2">WESCO</p>
+              <p className="text-gray-400 text-sm mb-4">May 2024 - October 2024</p>
+              <ul className="space-y-2 text-gray-300">
+                <li className="flex items-start">
+                  <span className="text-cyan-400 mr-3 mt-1">•</span>
+                  <span>Developed over 60 complex SQL queries to extract, manipulate, and analyze large datasets.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-cyan-400 mr-3 mt-1">•</span>
+                  <span>Conducted data quality assessments to identify and resolve data inconsistencies within the data lake.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-cyan-400 mr-3 mt-1">•</span>
+                  <span>Utilized Power BI to visualize analytics and provide data driven insights.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-cyan-400 mr-3 mt-1">•</span>
+                  <span>Migrated infrastructure to from legacy to Databricks</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Experience Card 3 */}
+      <Card className="bg-white/5 border border-purple-500/30 hover:bg-white/10 hover:border-purple-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/60 group">
+        <CardContent className="p-8 relative">
+          {/* External link icon */}
+          <a
+            href="https://www.kingdom-nft.com/" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute top-4 right-4 z-30 hover:scale-110 transition-transform text-gray-400 hover:text-white"
+            aria-label="Visit company website"
+          >
+            <ExternalLink className="w-5 h-5" />
+          </a>
+          <div className="flex items-start space-x-6">
+            {/* LOGO ONLY, NO BOX */}
+            <div className="w-16 h-16 flex items-center justify-center">
+              <img
+                src="/assets/kingdomnft.jpg"
+                alt="Kingdom NFT logo"
+                className="w-10 h-10 object-contain"
+                width={40}
+                height={40}
+                draggable={false}
+              />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-white font-bold text-2xl mb-2">Blockchain Consultant</h3>
+              <p className="text-purple-400 text-lg mb-2">Kingdom NFT</p>
+              <p className="text-gray-400 text-sm mb-4">March 2021 - December 2023</p>
+              <ul className="space-y-2 text-gray-300">
+                <li className="flex items-start">
+                  <span className="text-purple-400 mr-3 mt-1">•</span>
+                  <span>Advised over 800 clients on NFT market trends, investment opportunities, and digital asset management to optimize their portfolios.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-purple-400 mr-3 mt-1">•</span>
+                  <span>Developed and implemented innovative strategies for upcoming NFT mints, significantly increasing client visibility, sales and success.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-purple-400 mr-3 mt-1">•</span>
+                  <span>Facilitated over $350,000 in WEB-3 transactions across multiple blockchains within two years.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-purple-400 mr-3 mt-1">•</span>
+                  <span>Optimized performance and profitability standards</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  </div>
+</section>
 
         {/* Certifications Section */}
         <section
@@ -1029,7 +1060,7 @@ export default function Portfolio() {
                       MongoDB
                     </span>
                     <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
-                      +2
+                      TypeScript
                     </span>
                   </div>
                 </CardContent>
@@ -1056,7 +1087,7 @@ export default function Portfolio() {
                       OpenAI
                     </span>
                     <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">
-                      +1
+                      SQL
                     </span>
                   </div>
                 </CardContent>
@@ -1083,7 +1114,7 @@ export default function Portfolio() {
                       React
                     </span>
                     <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full border border-purple-500/30">
-                      +2
+                      TypeScript
                     </span>
                   </div>
                 </CardContent>
@@ -1099,12 +1130,11 @@ export default function Portfolio() {
         >
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
-<h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-black-100 to-white bg-clip-text text-transparent">
-  Expertise
-</h2>
-
+          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-black-100 to-white bg-clip-text text-transparent">
+            Expertise
+          </h2>
+              <div className="w-16 h-1 bg-white mx-auto mt-2"></div>
             </div>
-
             <div className="grid lg:grid-cols-2 gap-8">
               <Card className="bg-white/5 border-white/10 hover:bg-white/10 hover:border-purple-500/30 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/60">
                 <CardContent className="p-8">
