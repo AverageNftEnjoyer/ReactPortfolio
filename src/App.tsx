@@ -608,88 +608,85 @@ export default function Portfolio() {
           </div>
         </nav>
 
-      {/* Hero Section */}
+     {/* Hero Section */}
 <section className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-  <div className="max-w-7xl mx-auto">
+  <div className="max-w-7xl mx-auto w-full">
     <div className="text-center relative">
       <div className="relative z-10">
         <div className="flex items-center justify-center mb-6">
           <p className="text-5xl md:text-6xl text-gray-300 font-semibold">Hello, I'm Jack</p>
         </div>
 
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-8 leading-tight">
-          <span
-            className="bg-gradient-to-r from-blue-400 via-purple-400 to-teal-300 bg-clip-text text-transparent"
-            style={{ display: "inline-block" }}
-          >
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-8 leading-tight">
+          <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-teal-300 bg-clip-text text-transparent inline-block">
             FULL-STACK DEVELOPER
           </span>
           <br />
-          <span
-            className="bg-gradient-to-r from-yellow-400 via-pink-400 to-blue-400 bg-clip-text text-transparent"
-            style={{ display: "inline-block" }}
-          >
+          <span className="bg-gradient-to-r from-yellow-400 via-pink-400 to-blue-400 bg-clip-text text-transparent inline-block">
             & BLOCKCHAIN ENTHUSIAST.
           </span>
         </h1>
 
-        {/* Responsive layout: vertical stack on mobile, row on desktop */}
-        <div className="flex flex-col items-center space-y-4 md:space-y-0 md:flex-row md:space-x-8 md:justify-center mb-8">
-          <p className="text-2xl md:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 font-mono mb-0 md:mb-0">
-            // Based in Pittsburgh, PA
+        {/* Typing Animation: Always under main text */}
+        <div className="mb-4 md:mb-8">
+          <p className="text-2xl md:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 font-mono">
+            {typingText}
           </p>
-          <div className="flex space-x-6 mt-2 md:mt-0">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="w-16 h-16 p-0 hover:scale-110 transition-all duration-300"
-              onClick={() => window.open("https://www.linkedin.com/in/jack-pastor-816157223/", "_blank")}
-            >
-              <img
-                src="/assets/linkedin.png"
-                alt="LinkedIn"
-                className="h-12 w-12 object-contain"
-                width={48}
-                height={48}
-                draggable={false}
-              />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="w-16 h-16 p-0 hover:scale-110 transition-all duration-300"
-              onClick={() => window.open("https://github.com/AverageNftEnjoyer", "_blank")}
-            >
-              <img
-                src="/assets/rainbowgithub.png"
-                alt="GitHub"
-                className="h-36 w-36 object-contain"
-                width={68}
-                height={68}
-                draggable={false}
-              />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="w-16 h-16 p-0 hover:scale-110 transition-all duration-300"
-              onClick={() => window.open("/assets/JackPastorResume.pdf", "_blank")}
-            >
-              <img
-                src="/assets/colorfulresume.png"
-                alt="Resume"
-                className="h-12 w-12 object-contain"
-                width={48}
-                height={48}
-                draggable={false}
-              />
-            </Button>
-          </div>
+        </div>
+
+        {/* Social Icons: Stack vertically on mobile */}
+        <div className="flex flex-col items-center space-y-6 md:flex-row md:justify-center md:space-x-6 md:space-y-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-16 h-16 p-0 hover:scale-110 transition-all duration-300"
+            onClick={() => window.open("https://www.linkedin.com/in/jack-pastor-816157223/", "_blank")}
+          >
+            <img
+              src="/assets/linkedin.png"
+              alt="LinkedIn"
+              className="h-12 w-12 object-contain"
+              width={48}
+              height={48}
+              draggable={false}
+            />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-16 h-16 p-0 hover:scale-110 transition-all duration-300"
+            onClick={() => window.open("https://github.com/AverageNftEnjoyer", "_blank")}
+          >
+            <img
+              src="/assets/rainbowgithub.png"
+              alt="GitHub"
+              className="h-36 w-36 object-contain"
+              width={68}
+              height={68}
+              draggable={false}
+            />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-16 h-16 p-0 hover:scale-110 transition-all duration-300"
+            onClick={() => window.open("/assets/JackPastorResume.pdf", "_blank")}
+          >
+            <img
+              src="/assets/colorfulresume.png"
+              alt="Resume"
+              className="h-12 w-12 object-contain"
+              width={48}
+              height={48}
+              draggable={false}
+            />
+          </Button>
         </div>
       </div>
     </div>
   </div>
 </section>
+
 
 
         {/* About Section */}
