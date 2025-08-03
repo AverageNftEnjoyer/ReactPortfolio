@@ -614,7 +614,7 @@ export default function Portfolio() {
     <div className="text-center relative">
       <div className="relative z-10">
         <div className="flex items-center justify-center mb-6">
-          <p className="text-5xl md:text-6xl text-gray-300 font-semibold">Hello, I'm Jack</p>
+          <p className="text-5xl md:text-6xl text-white-300 font-semibold">Hello, I'm Jack</p>
         </div>
 
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-8 leading-tight">
@@ -793,19 +793,19 @@ export default function Portfolio() {
                       <p className="text-gray-400 text-sm mb-4">June 2025 - Current</p>
                       <ul className="space-y-2 text-gray-300">
                         <li className="flex items-start">
-                          <span className="text-cyan-400 mr-3 mt-1">•</span>
+                          <span className="text-green-400 mr-3 mt-1">•</span>
                           <span>Integrated enterprise processes to optimize workflows</span>
                         </li>
                         <li className="flex items-start">
-                          <span className="text-cyan-400 mr-3 mt-1">•</span>
+                          <span className="text-green-400 mr-3 mt-1">•</span>
                           <span>Developed cloud-based solutions using Microsoft Azure</span>
                         </li>
                         <li className="flex items-start">
-                          <span className="text-cyan-400 mr-3 mt-1">•</span>
+                          <span className="text-green-400 mr-3 mt-1">•</span>
                           <span>Automated AI/ML model training workflows with Azure OpenAI</span>
                         </li>
                         <li className="flex items-start">
-                          <span className="text-cyan-400 mr-3 mt-1">•</span>
+                          <span className="text-green-400 mr-3 mt-1">•</span>
                           <span>Worked within Oracle to increase DDP performence</span>
                         </li>
                       </ul>
@@ -865,19 +865,19 @@ export default function Portfolio() {
                       <p className="text-gray-400 text-sm mb-4">March 2021 - December 2023</p>
                       <ul className="space-y-2 text-gray-300">
                         <li className="flex items-start">
-                          <span className="text-cyan-400 mr-3 mt-1">•</span>
+                          <span className="text-purple-400 mr-3 mt-1">•</span>
                           <span>Advised over 800 clients on NFT market trends, investment opportunities, and digital asset management to optimize their portfolios.</span>
                         </li>
                         <li className="flex items-start">
-                          <span className="text-cyan-400 mr-3 mt-1">•</span>
+                          <span className="text-purple-400 mr-3 mt-1">•</span>
                           <span>Developed and implemented innovative strategies for upcoming NFT mints, significantly increasing client visibility, sales and success.</span>
                         </li>
                         <li className="flex items-start">
-                          <span className="text-cyan-400 mr-3 mt-1">•</span>
+                          <span className="text-purple-400 mr-3 mt-1">•</span>
                           <span>Facilitated over $350,000 in WEB-3 transactions across multiple blockchains within two years.</span>
                         </li>
                         <li className="flex items-start">
-                          <span className="text-cyan-400 mr-3 mt-1">•</span>
+                          <span className="text-purple-400 mr-3 mt-1">•</span>
                           <span>Optimized performance and profitability standards</span>
                         </li>
                       </ul>
