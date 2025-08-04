@@ -34,20 +34,27 @@ export default function Portfolio() {
 
 useEffect(() => {
   const observerOptions = {
-    threshold: 0.3, // Or 0.5 if you want it to reveal further down
+    threshold: 0.3,
     rootMargin: "0px 0px -50px 0px",
+  };
+
+  const handleAnimateEnd = (entry) => {
+    entry.target.classList.remove("animate-slide-in-up");
   };
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-      if (entry.isIntersecting && !entry.target.classList.contains("animated-once")) {
+      if (
+        entry.isIntersecting &&
+        !entry.target.classList.contains("animated-once")
+      ) {
         entry.target.classList.add("animate-slide-in-up", "animated-once");
         entry.target.classList.remove("opacity-0", "translate-y-8");
+        entry.target.addEventListener("animationend", () => handleAnimateEnd(entry), { once: true });
       }
     });
   }, observerOptions);
 
-  // Make sure About Me is being observed!
   const refs = [aboutRef, experienceRef, certificationsRef, projectsRef, skillsRef];
   refs.forEach((ref) => {
     if (ref.current) {
@@ -57,6 +64,7 @@ useEffect(() => {
 
   return () => observer.disconnect();
 }, []);
+
 
 
   // Smooth scroll function
@@ -198,16 +206,11 @@ useEffect(() => {
       </div>
 
       <style>{`
-        @keyframes slide-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(2rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+       @keyframes slide-in-up {
+  from { opacity: 0; transform: translateY(2rem); }
+  to   { opacity: 1; transform: translateY(0); }
 }
+
 .animate-slide-in-up {
   animation: slide-in-up 0.6s ease-out forwards;
 }
@@ -708,7 +711,7 @@ useEffect(() => {
      <section
   id="about"
   ref={aboutRef}
-  className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8 transition-all duration-600"
+  className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8"
 >
 
           <div className="max-w-7xl mx-auto">
@@ -783,7 +786,7 @@ useEffect(() => {
        {/* Professional Experience Section */}
 <section
   ref={experienceRef}
-  className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8 transition-all duration-600"
+  className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8"
 >
   <div className="max-w-7xl mx-auto">
     <div className="text-center mb-12">
@@ -956,7 +959,7 @@ useEffect(() => {
        {/* Certifications Section */}
 <section
   ref={certificationsRef}
-  className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8 transition-all duration-600"
+  className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8"
 >
   <div className="max-w-7xl mx-auto">
     <div className="text-center mb-12">
@@ -1055,7 +1058,7 @@ useEffect(() => {
         {/* Projects Section */}
         <section
           ref={projectsRef}
-          className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8 transition-all duration-600"
+          className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8"
         >
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
@@ -1154,7 +1157,7 @@ useEffect(() => {
         {/* Expertise Section */}
         <section
           ref={skillsRef}
-          className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8 transition-all duration-600"
+          className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8"
         >
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
