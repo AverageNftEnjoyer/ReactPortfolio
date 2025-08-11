@@ -6,6 +6,58 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { motion } from "framer-motion"; 
 
+function ElegantShape({
+  className,
+  delay = 0,
+  width = 400,
+  height = 100,
+  rotate = 0,
+  gradient = "from-white/[0.08]",
+}) {
+  return (
+    <motion.div
+      initial={{
+        opacity: 0,
+        y: -150,
+        rotate: rotate - 15,
+      }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        rotate: rotate,
+      }}
+      transition={{
+        duration: 2.4,
+        delay,
+        ease: [0.23, 0.86, 0.39, 0.96],
+        opacity: { duration: 1.2 },
+      }}
+      className={`absolute ${className ?? ""}`}
+    >
+      <motion.div
+        animate={{
+          y: [0, 15, 0],
+        }}
+        transition={{
+          duration: 12,
+          repeat: Number.POSITIVE_INFINITY,
+          ease: "easeInOut",
+        }}
+        style={{
+          width,
+          height,
+        }}
+        className="relative"
+      >
+        <div
+          className={`absolute inset-0 rounded-full bg-gradient-to-r to-transparent ${gradient} backdrop-blur-[2px] border-2 border-white/[0.15] shadow-[0_8px_32px_0_rgba(255,255,255,0.1)] after:absolute after:inset-0 after:rounded-full after:bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.2),transparent_70%)]`}
+        />
+      </motion.div>
+    </motion.div>
+  )
+}
+
+
 export default function Portfolio() {
   const [typingText, setTypingText] = useState("")
   const fullText = "// Based in Pittsburgh"
@@ -77,15 +129,15 @@ useEffect(() => {
     { name: "CSS", level: "Experienced" },
     { name: "JavaScript", level: "Intermediate" },
     { name: "Python", level: "Experienced" },
-    { name: "TypeScript", level: "Learning" },
-    { name: "React", level: "Intermediate" },
+    { name: "TypeScript", level: "Intermediate" },
+    { name: "React", level: "Experienced" },
   ]
 
   const backendSkills = [
     { name: "Databricks", level: "Experienced" },
     { name: "MySQL", level: "Experienced" },
     { name: "Java", level: "Intermediate" },
-    { name: "PHP", level: "Intermediate" },
+    { name: "Oracle", level: "Intermediate" },
     { name: "Node.JS", level: "Intermediate" },
     { name: "Snowflake", level: "Learning" },
   ]
@@ -99,7 +151,7 @@ useEffect(() => {
         <div className="aurora aurora-3"></div>
         <div className="aurora aurora-4"></div>
       </div>
-
+         
       {/* Floating Stars */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Original white stars */}
@@ -202,7 +254,6 @@ useEffect(() => {
 <div className="shooting-star shooting-star-1"></div>
 {/* Hero Shooting Star */}
 <div className="shooting-star hero-shooting-star-1"></div>
-
       </div>
 
       <style>{`
@@ -992,7 +1043,7 @@ useEffect(() => {
             <div className="flex-1">
               <h3 className="text-white font-semibold text-lg mb-1">Azure AZ-900 Fundamentals</h3>
               <p className="text-gray-400 text-sm mb-2">Microsoft</p>
-              <p className="text-gray-500 text-sm">July 2025</p>
+              <p className="text-gray-500 text-sm"> Completed July 2025</p>
             </div>
           </div>
         </CardContent>
@@ -1019,7 +1070,7 @@ useEffect(() => {
             <div className="flex-1">
               <h3 className="text-white font-semibold text-lg mb-1">Azure AZ-104 Administrator</h3>
               <p className="text-gray-400 text-sm mb-2">Microsoft</p>
-              <p className="text-gray-500 text-sm">Currently Completing</p>
+              <p className="text-gray-500 text-sm">Future</p>
             </div>
           </div>
         </CardContent>
