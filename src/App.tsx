@@ -1036,8 +1036,12 @@ useEffect(() => {
           </a>
           <div className="flex items-start space-x-4">
             <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-colors duration-300">
-              <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                <span className="text-white text-sm font-bold">C</span>
+              <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center overflow-hidden">
+                <img
+                  src="/assets/microsoft.png"
+                  alt="Microsoft Logo"
+                  className="w-6 h-6 object-contain"
+                />
               </div>
             </div>
             <div className="flex-1">
@@ -1063,8 +1067,12 @@ useEffect(() => {
           </a>
           <div className="flex items-start space-x-4">
             <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center group-hover:bg-orange-500/30 transition-colors duration-300">
-              <div className="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center">
-                <span className="text-white text-sm font-bold">C</span>
+              <div className="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center overflow-hidden">
+                <img
+                  src="/assets/microsoft.png"
+                  alt="Microsoft Logo"
+                  className="w-6 h-6 object-contain"
+                />
               </div>
             </div>
             <div className="flex-1">
@@ -1090,8 +1098,12 @@ useEffect(() => {
           </a>
           <div className="flex items-start space-x-4">
             <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center group-hover:bg-purple-500/30 transition-colors duration-300">
-              <div className="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
-                <span className="text-white text-sm font-bold">C</span>
+              <div className="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center overflow-hidden">
+                <img
+                  src="/assets/microsoft.png"
+                  alt="Microsoft Logo"
+                  className="w-6 h-6 object-contain"
+                />
               </div>
             </div>
             <div className="flex-1">
@@ -1105,6 +1117,7 @@ useEffect(() => {
     </div>
   </div>
 </section>
+
 
         {/* Projects Section */}
         <section
@@ -1292,7 +1305,7 @@ useEffect(() => {
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold text-white mb-4">Follow Me</h3>
+                <h3 className="text-xl font-semibold text-white mb-4">Lets Connect!</h3>
                 <ul className="space-y-2">
                   <li>
                     <a
