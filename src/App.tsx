@@ -1007,7 +1007,7 @@ useEffect(() => {
   </div>
 </section>
 
-       {/* Certifications Section */}
+      {/* Certifications Section */}
 <section
   ref={certificationsRef}
   className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8"
@@ -1024,7 +1024,6 @@ useEffect(() => {
       {/* Certification Card 1 */}
       <Card className="bg-white/5 border border-blue-500/30 hover:bg-white/10 hover:border-blue-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/60 group">
         <CardContent className="p-6 relative">
-          {/* External link icon for certificate */}
           <a
             href="/assets/az900.pdf"
             target="_blank"
@@ -1035,15 +1034,11 @@ useEffect(() => {
             <ExternalLink className="w-5 h-5" />
           </a>
           <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-colors duration-300">
-              <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center overflow-hidden">
-                <img
-                  src="/assets/microsoft.png"
-                  alt="Microsoft Logo"
-                  className="w-6 h-6 object-contain"
-                />
-              </div>
-            </div>
+            <img
+              src="/assets/microsoft.png"
+              alt="Microsoft Logo"
+              className="w-12 h-12 object-contain"
+            />
             <div className="flex-1">
               <h3 className="text-white font-semibold text-lg mb-1">Azure AZ-900 Fundamentals</h3>
               <p className="text-gray-400 text-sm mb-2">Microsoft</p>
@@ -1066,15 +1061,11 @@ useEffect(() => {
             <ExternalLink className="w-5 h-5" />
           </a>
           <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center group-hover:bg-orange-500/30 transition-colors duration-300">
-              <div className="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center overflow-hidden">
-                <img
-                  src="/assets/microsoft.png"
-                  alt="Microsoft Logo"
-                  className="w-6 h-6 object-contain"
-                />
-              </div>
-            </div>
+            <img
+              src="/assets/microsoft.png"
+              alt="Microsoft Logo"
+              className="w-12 h-12 object-contain"
+            />
             <div className="flex-1">
               <h3 className="text-white font-semibold text-lg mb-1">Azure AZ-104 Administrator</h3>
               <p className="text-gray-400 text-sm mb-2">Microsoft</p>
@@ -1097,15 +1088,11 @@ useEffect(() => {
             <ExternalLink className="w-5 h-5" />
           </a>
           <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center group-hover:bg-purple-500/30 transition-colors duration-300">
-              <div className="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center overflow-hidden">
-                <img
-                  src="/assets/microsoft.png"
-                  alt="Microsoft Logo"
-                  className="w-6 h-6 object-contain"
-                />
-              </div>
-            </div>
+            <img
+              src="/assets/microsoft.png"
+              alt="Microsoft Logo"
+              className="w-12 h-12 object-contain"
+            />
             <div className="flex-1">
               <h3 className="text-white font-semibold text-lg mb-1"> Azure AI-900 Fundamentals</h3>
               <p className="text-gray-400 text-sm mb-2">Microsoft</p>
@@ -1117,6 +1104,7 @@ useEffect(() => {
     </div>
   </div>
 </section>
+
 
 
         {/* Projects Section */}
