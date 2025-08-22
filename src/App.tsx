@@ -1132,34 +1132,49 @@ useEffect(() => {
 <div className="w-16 h-1 bg-gradient-to-r from-blue-400 via-blue-400 to-purple-400 mx-auto"></div>
 
             </div>
-
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+
               {/* Project Card 1 */}
-              <Card className="bg-white/5 border border-green-500/30 hover:bg-white/10 hover:border-green-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/60 group relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <CardContent className="p-6 relative z-10">
-                  <h3 className="text-white font-bold text-xl mb-3">E-commerce Platform</h3>
-                  <p className="text-gray-400 text-sm mb-3">January 2024 - Present</p>
-                  <p className="text-gray-300 text-sm mb-4 leading-relaxed">
-                    Full-stack e-commerce solution with modern UI, secure payment processing, and inventory management
-                    system.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
-                      React
-                    </span>
-                    <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
-                      Node.js
-                    </span>
-                    <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
-                      MongoDB
-                    </span>
-                    <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
-                      TypeScript
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+<Card className="bg-white/5 border border-green-500/30 hover:bg-white/10 hover:border-green-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/60 group relative overflow-hidden">
+  {/* Subtle diagonal glow */}
+  <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+  <CardContent className="p-6 relative z-10">
+    {/* Top-right action icon (matches Certification Card 3 style) */}
+    <a
+      href="/projects/query-analyzer" /* replace with your live demo, repo, or case study */
+      target="_blank"
+      rel="noopener noreferrer"
+      className="absolute top-4 right-4 z-30 hover:scale-110 transition-transform text-gray-400 hover:text-white"
+      aria-label="Open Query Analyzer project"
+    >
+      <ExternalLink className="w-5 h-5" />
+    </a>
+
+    <h3 className="text-white font-bold text-xl mb-3">AI Query Analyzer</h3>
+    <p className="text-gray-400 text-sm mb-3">July 2025 - Present</p>
+    <p className="text-gray-300 text-sm mb-4 leading-relaxed">
+      Full-stack SQL query solution with modern UI, AI integration, and results management
+      system.
+    </p>
+
+    <div className="flex flex-wrap gap-2">
+      <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
+        React
+      </span>
+      <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
+        Azure
+      </span>
+      <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
+        OpenAI
+      </span>
+      <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
+        TypeScript
+      </span>
+    </div>
+  </CardContent>
+</Card>
+
 
               {/* Project Card 2 */}
               <Card className="bg-white/5 border border-blue-500/30 hover:bg-white/10 hover:border-blue-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/60 group relative overflow-hidden">
