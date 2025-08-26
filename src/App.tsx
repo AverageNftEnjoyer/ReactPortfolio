@@ -1091,7 +1091,7 @@ useEffect(() => {
       <Card className="bg-white/5 border border-purple-500/30 hover:bg-white/10 hover:border-purple-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/60 group md:col-span-2 lg:col-span-1">
         <CardContent className="p-6 relative">
           <a
-            href="/assets/ai900.pdf"
+            href="/assets/AI-900.pdf"
             target="_blank"
             rel="noopener noreferrer"
             className="absolute top-4 right-4 z-30 hover:scale-110 transition-transform text-gray-400 hover:text-white"
@@ -1112,7 +1112,7 @@ useEffect(() => {
             <div className="flex-1">
               <h3 className="text-white font-semibold text-lg mb-1"> Azure AI-900 Fundamentals</h3>
               <p className="text-gray-400 text-sm mb-2">Microsoft</p>
-              <p className="text-gray-500 text-sm">Currently Completing</p>
+              <p className="text-gray-500 text-sm">Completed August 2025</p>
             </div>
           </div>
         </CardContent>
