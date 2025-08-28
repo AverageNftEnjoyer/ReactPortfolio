@@ -1136,13 +1136,11 @@ useEffect(() => {
 
               {/* Project Card 1 */}
 <Card className="bg-white/5 border border-green-500/30 hover:bg-white/10 hover:border-green-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/60 group relative overflow-hidden">
-  {/* Subtle diagonal glow */}
   <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
   <CardContent className="p-6 relative z-10">
-    {/* Top-right action icon (matches Certification Card 3 style) */}
     <a
-      href="/projects/query-analyzer" /* replace with your live demo, repo, or case study */
+      href="https://query-analyzer-rhur.vercel.app/" 
       target="_blank"
       rel="noopener noreferrer"
       className="absolute top-4 right-4 z-30 hover:scale-110 transition-transform text-gray-400 hover:text-white"
