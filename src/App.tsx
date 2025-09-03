@@ -1140,7 +1140,7 @@ useEffect(() => {
 
   <CardContent className="p-6 relative z-10">
     <a
-      href="https://query-analyzer-rhur.vercel.app/" 
+      href="https://sqlqueryanalyzer.vercel.app/" 
       target="_blank"
       rel="noopener noreferrer"
       className="absolute top-4 right-4 z-30 hover:scale-110 transition-transform text-gray-400 hover:text-white"
