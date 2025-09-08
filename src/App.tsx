@@ -1149,7 +1149,7 @@ useEffect(() => {
       <ExternalLink className="w-5 h-5" />
     </a>
 
-    <h3 className="text-white font-bold text-xl mb-3">AI Query Analyzer</h3>
+    <h3 className="text-white font-bold text-xl mb-3">AI Query Companion Tool</h3>
     <p className="text-gray-400 text-sm mb-3">July 2025 - Present</p>
     <p className="text-gray-300 text-sm mb-4 leading-relaxed">
       Full-stack SQL query solution with modern UI, AI integration, and results management
