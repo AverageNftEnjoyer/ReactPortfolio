@@ -1143,7 +1143,7 @@ useEffect(() => {
                       <h3 className="text-white font-bold text-xl">AI Query Companion Tool</h3>
                       <div className="flex items-center gap-3">
                         <a
-                          href="https://github.com/AverageNftEnjoyer/AI-Query-Companion"
+                          href="https://github.com/AverageNftEnjoyer/QueryAnalyzer"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="hover:scale-110 transition-transform text-gray-400 hover:text-white"
