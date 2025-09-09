@@ -1135,56 +1135,56 @@ useEffect(() => {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
 
               {/* Project Card 1 */}
-<Card className="bg-white/5 border border-green-500/30 hover:bg-white/10 hover:border-green-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/60 group relative overflow-hidden">
-  <CardContent className="p-6 relative z-10">
-    
-    {/* Title Row with Icons Right-Aligned */}
-    <div className="flex justify-between items-center mb-3">
-      <h3 className="text-white font-bold text-xl">AI Query Companion Tool</h3>
-      <div className="flex items-center gap-3">
-        <a
-          href="https://github.com/AverageNftEnjoyer/AI-Query-Companion"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:scale-110 transition-transform text-gray-400 hover:text-white"
-          aria-label="View GitHub repository"
-        >
-          <Github className="w-5 h-5" />
-        </a>
-        <a
-          href="https://sqlqueryanalyzer.vercel.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:scale-110 transition-transform text-gray-400 hover:text-white"
-          aria-label="View Live Site"
-        >
-          <ExternalLink className="w-5 h-5" />
-        </a>
-      </div>
-    </div>
+                <Card className="bg-white/5 border border-green-500/30 hover:bg-white/10 hover:border-green-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/60 group relative overflow-hidden">
+                  <CardContent className="p-6 relative z-10">
+                    
+                    {/* Title Row with Icons Right-Aligned */}
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="text-white font-bold text-xl">AI Query Companion Tool</h3>
+                      <div className="flex items-center gap-3">
+                        <a
+                          href="https://github.com/AverageNftEnjoyer/AI-Query-Companion"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:scale-110 transition-transform text-gray-400 hover:text-white"
+                          aria-label="View GitHub repository"
+                        >
+                          <Github className="w-5 h-5" />
+                        </a>
+                        <a
+                          href="https://sqlqueryanalyzer.vercel.app/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:scale-110 transition-transform text-gray-400 hover:text-white"
+                          aria-label="View Live Site"
+                        >
+                          <ExternalLink className="w-5 h-5" />
+                        </a>
+                      </div>
+                    </div>
 
-    <p className="text-gray-400 text-sm mb-3">July 2025 - Present</p>
-    <p className="text-gray-300 text-sm mb-4 leading-relaxed">
-      Full-stack SQL query solution with modern UI, AI integration, and results management system.
-    </p>
+                    <p className="text-gray-400 text-sm mb-3">AI Integration</p>
+                    <p className="text-gray-300 text-sm mb-4 leading-relaxed">
+                      Production-ready SQL diff engine with embedded AI explanations, stakeholder summaries, and real time change classification.
+                    </p>
 
-    {/* Tech Pills */}
-    <div className="flex flex-wrap gap-2">
-      <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
-        React
-      </span>
-      <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
-        Azure
-      </span>
-      <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
-        OpenAI
-      </span>
-      <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
-        TypeScript
-      </span>
-    </div>
-  </CardContent>
-</Card>
+                    {/* Tech Pills */}
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
+                        React
+                      </span>
+                      <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
+                        Azure
+                      </span>
+                      <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
+                        OpenAI
+                      </span>
+                      <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
+                        TypeScript
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
 
               {/* Project Card 2 */}
               <Card className="bg-white/5 border border-blue-500/30 hover:bg-white/10 hover:border-blue-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/60 group relative overflow-hidden">
@@ -1220,8 +1220,7 @@ useEffect(() => {
                   <h3 className="text-white font-bold text-xl mb-3">Blockchain Wallet</h3>
                   <p className="text-gray-400 text-sm mb-3">September 2024 - December 2024</p>
                   <p className="text-gray-300 text-sm mb-4 leading-relaxed">
-                    Secure cryptocurrency wallet with multi-chain support, DeFi integration, and advanced security
-                    features.
+                    In progress.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full border border-purple-500/30">
