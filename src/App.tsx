@@ -1010,134 +1010,23 @@ useEffect(() => {
   </div>
 </section>
 
-       {/* Certifications Section */}
-<section
-  ref={certificationsRef}
-  className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8"
->
-  <div className="max-w-7xl mx-auto">
-    <div className="text-center mb-12">
-      <h2 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 mb-2">
-        Certifications
-      </h2>
-      <div className="w-16 h-1 bg-gradient-to-r from-pink-400 to-purple-400 mx-auto"></div>
-    </div>
-
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-      {/* Certification Card 1 */}
-      <Card className="bg-white/5 border border-blue-500/30 hover:bg-white/10 hover:border-blue-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/60 group">
-        <CardContent className="p-6 relative">
-          {/* External link icon for certificate */}
-          <a
-            href="/assets/az900.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="absolute top-4 right-4 z-30 hover:scale-110 transition-transform text-gray-400 hover:text-white"
-            aria-label="View certificate"
+                {/* Projects Section */}
+          <section
+            ref={projectsRef}
+            className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8"
           >
-            <ExternalLink className="w-5 h-5" />
-          </a>
-          <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-colors duration-300">
-              <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center overflow-hidden">
-                <img
-                  src="/assets/microsoft.png"
-                  alt="Microsoft Logo"
-                  className="w-6 h-6 object-contain"
-                />
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-pink-400 via-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
+                  Featured Projects
+                </h2>
+                <div className="w-16 h-1 bg-gradient-to-r from-blue-400 via-blue-400 to-purple-400 mx-auto"></div>
               </div>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-white font-semibold text-lg mb-1">Azure AZ-900 Fundamentals</h3>
-              <p className="text-gray-400 text-sm mb-2">Microsoft</p>
-              <p className="text-gray-500 text-sm"> Completed July 2025</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
 
-      {/* Certification Card 2 */}
-      <Card className="bg-white/5 border border-orange-500/30 hover:bg-white/10 hover:border-orange-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-orange-500/60 group">
-        <CardContent className="p-6 relative">
-          <a
-            href="/assets/az104.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="absolute top-4 right-4 z-30 hover:scale-110 transition-transform text-gray-400 hover:text-white"
-            aria-label="View certificate"
-          >
-            <ExternalLink className="w-5 h-5" />
-          </a>
-          <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center group-hover:bg-orange-500/30 transition-colors duration-300">
-              <div className="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center overflow-hidden">
-                <img
-                  src="/assets/microsoft.png"
-                  alt="Microsoft Logo"
-                  className="w-6 h-6 object-contain"
-                />
-              </div>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-white font-semibold text-lg mb-1">Azure AZ-104 Administrator</h3>
-              <p className="text-gray-400 text-sm mb-2">Microsoft</p>
-              <p className="text-gray-500 text-sm">Future</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Certification Card 3 */}
-      <Card className="bg-white/5 border border-purple-500/30 hover:bg-white/10 hover:border-purple-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/60 group md:col-span-2 lg:col-span-1">
-        <CardContent className="p-6 relative">
-          <a
-            href="/assets/AI-900.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="absolute top-4 right-4 z-30 hover:scale-110 transition-transform text-gray-400 hover:text-white"
-            aria-label="View certificate"
-          >
-            <ExternalLink className="w-5 h-5" />
-          </a>
-          <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center group-hover:bg-purple-500/30 transition-colors duration-300">
-              <div className="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center overflow-hidden">
-                <img
-                  src="/assets/microsoft.png"
-                  alt="Microsoft Logo"
-                  className="w-6 h-6 object-contain"
-                />
-              </div>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-white font-semibold text-lg mb-1"> Azure AI-900 Fundamentals</h3>
-              <p className="text-gray-400 text-sm mb-2">Microsoft</p>
-              <p className="text-gray-500 text-sm">Completed August 2025</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  </div>
-</section>
-
-
-        {/* Projects Section */}
-        <section
-          ref={projectsRef}
-          className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8"
-        >
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-pink-400 via-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
-                Featured Projects</h2>
-                <div className="w-16 h-1 bg-gradient-to-r from-blue-400 via-blue-400 to-purple-400 mx-auto"></div> </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-
-              {/* Project Card 1 */}
+                {/* Project Card 1 */}
                 <Card className="bg-white/5 border border-green-500/30 hover:bg-white/10 hover:border-green-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/60 group relative overflow-hidden">
                   <CardContent className="p-6 relative z-10">
-                    
                     {/* Title Row with Icons Right-Aligned */}
                     <div className="flex justify-between items-center mb-3">
                       <h3 className="text-white font-bold text-xl">AI Query Companion Tool</h3>
@@ -1186,61 +1075,170 @@ useEffect(() => {
                   </CardContent>
                 </Card>
 
-              {/* Project Card 2 */}
-              <Card className="bg-white/5 border border-blue-500/30 hover:bg-white/10 hover:border-blue-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/60 group relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <CardContent className="p-6 relative z-10">
-                  <h3 className="text-white font-bold text-xl mb-3">AI Task Manager</h3>
-                  <p className="text-gray-400 text-sm mb-3">November 2024</p>
-                  <p className="text-gray-300 text-sm mb-4 leading-relaxed">
-                    Intelligent project management application with AI-powered task prioritization and automated
-                    scheduling.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">
-                      Python
-                    </span>
-                    <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">
-                      FastAPI
-                    </span>
-                    <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">
-                      OpenAI
-                    </span>
-                    <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">
-                      SQL
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+                {/* Project Card 2 */}
+                <Card className="bg-white/5 border border-blue-500/30 hover:bg-white/10 hover:border-blue-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/60 group relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <CardContent className="p-6 relative z-10">
+                    <h3 className="text-white font-bold text-xl mb-3">AI Task Manager</h3>
+                    <p className="text-gray-400 text-sm mb-3">November 2024</p>
+                    <p className="text-gray-300 text-sm mb-4 leading-relaxed">
+                      Intelligent project management application with AI-powered task prioritization and automated scheduling.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">
+                        Python
+                      </span>
+                      <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">
+                        FastAPI
+                      </span>
+                      <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">
+                        OpenAI
+                      </span>
+                      <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">
+                        SQL
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
 
-              {/* Project Card 3 */}
-              <Card className="bg-white/5 border border-purple-500/30 hover:bg-white/10 hover:border-purple-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/60 group relative overflow-hidden md:col-span-2 lg:col-span-1">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <CardContent className="p-6 relative z-10">
-                  <h3 className="text-white font-bold text-xl mb-3">Blockchain Wallet</h3>
-                  <p className="text-gray-400 text-sm mb-3">September 2024 - December 2024</p>
-                  <p className="text-gray-300 text-sm mb-4 leading-relaxed">
-                    In progress.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full border border-purple-500/30">
-                      Solidity
-                    </span>
-                    <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full border border-purple-500/30">
-                      Web3.js
-                    </span>
-                    <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full border border-purple-500/30">
-                      React
-                    </span>
-                    <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full border border-purple-500/30">
-                      TypeScript
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+                {/* Project Card 3 */}
+                <Card className="bg-white/5 border border-purple-500/30 hover:bg-white/10 hover:border-purple-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/60 group relative overflow-hidden md:col-span-2 lg:col-span-1">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <CardContent className="p-6 relative z-10">
+                    <h3 className="text-white font-bold text-xl mb-3">Blockchain Wallet</h3>
+                    <p className="text-gray-400 text-sm mb-3">September 2024 - December 2024</p>
+                    <p className="text-gray-300 text-sm mb-4 leading-relaxed">
+                      In progress.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full border border-purple-500/30">
+                        Solidity
+                      </span>
+                      <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full border border-purple-500/30">
+                        Web3.js
+                      </span>
+                      <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full border border-purple-500/30">
+                        React
+                      </span>
+                      <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full border border-purple-500/30">
+                        TypeScript
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+
+          {/* Certifications Section */}
+          <section
+            ref={certificationsRef}
+            className="py-16 px-4 sm:px-6 lg:px-8 opacity-0 translate-y-8"
+          >
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 mb-2">
+                  Certifications
+                </h2>
+                <div className="w-16 h-1 bg-gradient-to-r from-pink-400 to-purple-400 mx-auto"></div>
+              </div>
+
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                {/* Certification Card 1 */}
+                <Card className="bg-white/5 border border-blue-500/30 hover:bg-white/10 hover:border-blue-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/60 group">
+                  <CardContent className="p-6 relative">
+                    <a
+                      href="/assets/az900.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute top-4 right-4 z-30 hover:scale-110 transition-transform text-gray-400 hover:text-white"
+                      aria-label="View certificate"
+                    >
+                      <ExternalLink className="w-5 h-5" />
+                    </a>
+                    <div className="flex items-start space-x-4">
+                      <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-colors duration-300">
+                        <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center overflow-hidden">
+                          <img
+                            src="/assets/microsoft.png"
+                            alt="Microsoft Logo"
+                            className="w-6 h-6 object-contain"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-white font-semibold text-lg mb-1">Azure AZ-900 Fundamentals</h3>
+                        <p className="text-gray-400 text-sm mb-2">Microsoft</p>
+                        <p className="text-gray-500 text-sm"> Completed July 2025</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Certification Card 2 */}
+                <Card className="bg-white/5 border border-orange-500/30 hover:bg-white/10 hover:border-orange-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-orange-500/60 group">
+                  <CardContent className="p-6 relative">
+                    <a
+                      href="/assets/az104.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute top-4 right-4 z-30 hover:scale-110 transition-transform text-gray-400 hover:text-white"
+                      aria-label="View certificate"
+                    >
+                      <ExternalLink className="w-5 h-5" />
+                    </a>
+                    <div className="flex items-start space-x-4">
+                      <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center group-hover:bg-orange-500/30 transition-colors duration-300">
+                        <div className="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center overflow-hidden">
+                          <img
+                            src="/assets/microsoft.png"
+                            alt="Microsoft Logo"
+                            className="w-6 h-6 object-contain"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-white font-semibold text-lg mb-1">Azure AZ-104 Administrator</h3>
+                        <p className="text-gray-400 text-sm mb-2">Microsoft</p>
+                        <p className="text-gray-500 text-sm">Future</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Certification Card 3 */}
+                <Card className="bg-white/5 border border-purple-500/30 hover:bg-white/10 hover:border-purple-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/60 group md:col-span-2 lg:col-span-1">
+                  <CardContent className="p-6 relative">
+                    <a
+                      href="/assets/AI-900.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute top-4 right-4 z-30 hover:scale-110 transition-transform text-gray-400 hover:text-white"
+                      aria-label="View certificate"
+                    >
+                      <ExternalLink className="w-5 h-5" />
+                    </a>
+                    <div className="flex items-start space-x-4">
+                      <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center group-hover:bg-purple-500/30 transition-colors duration-300">
+                        <div className="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center overflow-hidden">
+                          <img
+                            src="/assets/microsoft.png"
+                            alt="Microsoft Logo"
+                            className="w-6 h-6 object-contain"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-white font-semibold text-lg mb-1"> Azure AI-900 Fundamentals</h3>
+                        <p className="text-gray-400 text-sm mb-2">Microsoft</p>
+                        <p className="text-gray-500 text-sm">Completed August 2025</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </section>
 
         {/* Expertise Section */}
         <section
