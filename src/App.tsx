@@ -1136,26 +1136,39 @@ useEffect(() => {
 
               {/* Project Card 1 */}
 <Card className="bg-white/5 border border-green-500/30 hover:bg-white/10 hover:border-green-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/60 group relative overflow-hidden">
-  <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
   <CardContent className="p-6 relative z-10">
-    <a
-      href="https://sqlqueryanalyzer.vercel.app/" 
-      target="_blank"
-      rel="noopener noreferrer"
-      className="absolute top-4 right-4 z-30 hover:scale-110 transition-transform text-gray-400 hover:text-white"
-      aria-label="Open Query Analyzer project"
-    >
-      <ExternalLink className="w-5 h-5" />
-    </a>
+    
+    {/* Title Row with Icons Right-Aligned */}
+    <div className="flex justify-between items-center mb-3">
+      <h3 className="text-white font-bold text-xl">AI Query Companion Tool</h3>
+      <div className="flex items-center gap-3">
+        <a
+          href="https://github.com/AverageNftEnjoyer/AI-Query-Companion"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:scale-110 transition-transform text-gray-400 hover:text-white"
+          aria-label="View GitHub repository"
+        >
+          <Github className="w-5 h-5" />
+        </a>
+        <a
+          href="https://sqlqueryanalyzer.vercel.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:scale-110 transition-transform text-gray-400 hover:text-white"
+          aria-label="View Live Site"
+        >
+          <ExternalLink className="w-5 h-5" />
+        </a>
+      </div>
+    </div>
 
-    <h3 className="text-white font-bold text-xl mb-3">AI Query Companion Tool</h3>
     <p className="text-gray-400 text-sm mb-3">July 2025 - Present</p>
     <p className="text-gray-300 text-sm mb-4 leading-relaxed">
-      Full-stack SQL query solution with modern UI, AI integration, and results management
-      system.
+      Full-stack SQL query solution with modern UI, AI integration, and results management system.
     </p>
 
+    {/* Tech Pills */}
     <div className="flex flex-wrap gap-2">
       <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
         React
@@ -1172,7 +1185,6 @@ useEffect(() => {
     </div>
   </CardContent>
 </Card>
-
 
               {/* Project Card 2 */}
               <Card className="bg-white/5 border border-blue-500/30 hover:bg-white/10 hover:border-blue-400/50 hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/60 group relative overflow-hidden">
