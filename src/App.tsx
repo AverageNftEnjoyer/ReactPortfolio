@@ -1041,7 +1041,7 @@ useEffect(() => {
                           <Github className="w-5 h-5" />
                         </a>
                         <a
-                          href="https://sqlqueryanalyzer.vercel.app/"
+                          href="https://sqlquery-analyzer.vercel.app/"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="hover:scale-110 transition-transform text-gray-400 hover:text-white"
