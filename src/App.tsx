@@ -8,7 +8,6 @@ import { motion } from "framer-motion";
 
 
 
-
 function ElegantShape({
   className,
   delay = 0,
@@ -650,6 +649,26 @@ useEffect(() => {
           className="nav-link px-3 py-2 sm:px-4 text-sm sm:text-base text-gray-300 hover:text-white transition-colors rounded-xl border-none cursor-pointer bg-transparent flex flex-col items-center group"
         >
           About
+          <span className="nav-underline group-hover:w-full"></span>
+        </button>
+      </li>
+      {/* Experience */}
+      <li className="relative">
+        <button
+          onClick={() => scrollToSection(experienceRef)}
+          className="nav-link px-3 py-2 sm:px-4 text-sm sm:text-base text-gray-300 hover:text-white transition-colors rounded-xl border-none cursor-pointer bg-transparent flex flex-col items-center group"
+        >
+          Experience
+          <span className="nav-underline group-hover:w-full"></span>
+        </button>
+      </li>
+      {/* Certs */}
+      <li className="relative">
+        <button
+          onClick={() => scrollToSection(certificationsRef)}
+          className="nav-link px-3 py-2 sm:px-4 text-sm sm:text-base text-gray-300 hover:text-white transition-colors rounded-xl border-none cursor-pointer bg-transparent flex flex-col items-center group"
+        >
+          Certs
           <span className="nav-underline group-hover:w-full"></span>
         </button>
       </li>
