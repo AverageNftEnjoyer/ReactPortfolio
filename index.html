@@ -5,300 +5,244 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Jack Pastor Portfolio</title>
-    <script>
-      if (/Mobi|Android/i.test(navigator.userAgent)) {
-        window.location.href = 'mobile.html';
-      }
-    </script>    
 
-    <!-- Favicon and Apple Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
     <link rel="manifest" href="assets/site.webmanifest">
 
-    <!-- Open Graph Meta Tags for Social Sharing -->
     <meta property="og:title" content="Jack Pastor Portfolio">
     <meta property="og:description" content="Jack Pastor, a Full-Stack Developer and Blockchain Enthusiast.">
     <meta property="og:image" content="assets/Logo3.png">
     <meta property="og:url" content="https://jackp-portfolio.vercel.app/">
     <meta property="og:type" content="website">
 
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-</head>
+    <link rel="stylesheet" href="home.css" />
+  </head>
   <body>
+    <div class="crt">
+      <main class="home-main">
+        <div class="grid-shell">
+          <div class="card-grid fade-in-right">
+            <button class="card channel-shadow channel-btn" type="button" data-channel="about" aria-label="Open About Me">
+              <div class="card-content card-disc">
+                <img class="card-disc-img" src="assets/disc.png" alt="Disc" />
+                <p class="card-disc-label">About Me</p>
+              </div>
+            </button>
+            <button class="card channel-shadow channel-btn dark" type="button" data-channel="story" aria-label="Open Work Experience">
+              <div class="card-content card-expo">
+                <div class="card-reveal">
+                  <span class="card-title">Work Experience</span>
+                  <span class="card-subtitle">My Career Path</span>
+                </div>
+              </div>
+            </button>
+            <button class="card channel-shadow channel-btn" type="button" data-channel="certs" aria-label="Open Certifications">
+              <div class="card-content card-certs">
+                <p class="card-certs-label">Certifications</p>
+                <p class="card-certs-sub">My Credentials</p>
+              </div>
+            </button>
 
-    <nav id="desktop-nav">
-        <div class="nav-left">
-          <ul class="nav-links-left">
-            <li><a href="index.html" class="nav-button">Home</a></li>
-          </ul>
-        </div>
-        <div class="nav-right">
-          <ul class="nav-links">
-            <li><a href="#about" class="nav-button">About</a></li>
-            <li><a href="projects.html" class="nav-button">Projects</a></li>
-            <li><a href="contact.html" class="nav-button">Contact Me</a></li>
-          </ul>
-        </div>
-      </nav>      
+            <a href="https://github.com/AverageNftEnjoyer" target="_blank" rel="noopener" class="card channel-shadow" aria-label="Open GitHub">
+              <div class="card-content card-github">
+                <div class="card-github-sparkles" aria-hidden="true">
+                  <span></span><span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <img class="card-github-icon" src="assets/GithubNew.png" alt="" />
+                <p class="card-github-label">Github</p>
+                <p class="card-github-sub">My Code</p>
+              </div>
+            </a>
+            <a href="https://www.linkedin.com/in/jack-pastor-816157223/" target="_blank" rel="noopener" class="card channel-shadow" aria-label="Open LinkedIn">
+              <div class="card-content card-linkedin">
+                <img class="card-linkedin-icon" src="assets/linkedin.png" alt="" />
+                <p class="card-linkedin-label">Linkedin</p>
+                <p class="card-linkedin-sub">Let's Connect</p>
+              </div>
+            </a>
+            <a href="assets/JackPastorResume.pdf" target="_blank" rel="noopener" class="card channel-shadow" aria-label="Open Resume">
+              <div class="card-content card-resume">
+                <p class="card-resume-label">Resume</p>
+                <p class="card-resume-sub">View Resume</p>
+              </div>
+            </a>
 
-    <!-- Intro Section -->
-    <section id="main-content" class="fade-in-up">
-        <div class="intro-container">
-        <div class="intro-text">
-          <p class="greeting">
-            <img src="./assets/Logo.png" alt="Profile" class="profile-icon" />
-            Hello, I'm Jack
-          </p>
-          <h1>
-            <span class="highlight-purple">FULL-STACK</span>
-            <span class="highlight-green">DEVELOPER</span><br/>
-            & <span class="highlight-yellow">BLOCKCHAIN</span>
-            <span class="highlight-blue">ENTHUSIAST.</span>
-          </h1>
-          <div class="details">
-            <p class="location" id="typing-text">//</p> 
-            <img
-              src="./assets/linkedin.png"
-              alt="My LinkedIn profile"
-              class="icon move-on-hover"
-              onclick="location.href='https://www.linkedin.com/in/jack-pastor-816157223/'"
-            />
-            <img
-              src="./assets/rainbowgithub.png"
-              alt="My Github profile"
-              class="icon move-on-hover github-icon"
-              onclick="location.href='https://github.com/AverageNftEnjoyer'"
-            />
-            <img
-              src="./assets/colorfulresume.png"
-              alt="My Resume"
-              class="icon move-on-hover resume-icon"
-              onclick="window.open('./assets/JackPastorResume.pdf')"
-            />
-        <img src="./assets/java.png" alt="Java Icon" class="floating-icon" />
-        <img src="./assets/javascript.png" alt="Javascript Icon" class="floating-icon" />
-        <img src="./assets/CSS.png" alt="CSS Icon" class="floating-icon" />
-        <img src="./assets/htmlNew.png" alt="HTML Icon" class="floating-icon" />
-        <img src="./assets/Databricks.png" alt="SQL Icon" class="floating-icon" />
-        <img src="./assets/Mongo.png" alt="Mongo Icon" class="floating-icon" />
-        <img src="./assets/React.png" alt="React Icon" class="floating-icon" />
-        <img src="./assets/GIT.png" alt="GIT Icon" class="floating-icon" />
-        <img src="./assets/snowflake.png" alt="Snowflake Icon" class="floating-icon" />
-        <img src="./assets/TS.png" alt="TS Icon" class="floating-icon" />
-        <img src="./assets/PYTHON.png" alt="Python Icon" class="floating-icon" />
-        <img src="./assets/Leetcode.png" alt="Leetcode Icon" class="floating-icon" />
-        </div> 
-          </div>
-        </div>
-      </div> 
-    </section>
-
-    <!-- About Section -->
-    <section id="about" class="fade-in-up">
-    <p class="section__text__p8">Get To Know More</p>
-      <h1 class="section__text__p9">About Me</h1>
-      <div class="section-container">
-        <div class="section__pic-container">
-          <img src="./assets/Profile.jpeg" alt="Jack Pastor profile picture" />
-        </div>
-        <div class="about-details-container">
-          <div class="about-containers">
-            <div class="Experience-container">
-              <img
-                src="./assets/experience.png"
-                alt="Experience icon"
-                class="Abouticon"
-              />
-              <h3>Experience</h3>
-              <p>2+ years Frontend Development<br />1 year Backend Development </p>
+            <a href="https://querycompanion.vercel.app/" target="_blank" rel="noopener" class="card channel-shadow" aria-label="Open QueryLens">
+              <div class="card-content card-querylens">
+                <p class="card-querylens-label">Querylens</p>
+                <p class="card-querylens-sub">SQL Companion Tool</p>
+              </div>
+            </a>
+            <div class="card channel-shadow dark">
+              <div class="card-content">
+                <div class="card-reveal">
+                  <span class="card-title">Nova.AIO</span>
+                  <span class="card-subtitle">Multi-Agent Framework</span>
+                </div>
+              </div>
             </div>
-            <div class="Education-container">
-              <img
-                src="./assets/education.png"
-                alt="Education icon"
-                class="Abouticon"
-              />
-              <h3>Education</h3>
-              <p>B.Sc. Bachelors Degree<br />Minor Data Science</p>
+            <button class="card channel-shadow channel-btn" type="button" data-channel="arcade" aria-label="Open Arcade">
+              <div class="card-content card-arcade">
+                <div class="card-arcade-scene" aria-hidden="true">
+                  <span class="card-arcade-balloon b1"></span>
+                  <span class="card-arcade-balloon b2"></span>
+                  <span class="card-arcade-balloon b3"></span>
+                  <span class="card-arcade-target"></span>
+                </div>
+                <div class="card-reveal">
+                  <span class="card-title">Arcade</span>
+                  <span class="card-subtitle">Quick Break</span>
+                </div>
+              </div>
+            </button>
+            <div class="card channel-shadow"><div class="card-content"><p class="card-placeholder-label">Coming Soon</p></div></div>
+            <div class="card channel-shadow"><div class="card-content"><p class="card-placeholder-label">Coming Soon</p></div></div>
+            <div class="card channel-shadow"><div class="card-content"><p class="card-placeholder-label">Coming Soon</p></div></div>
+          </div>
+        </div>
+      </main>
+
+      <div class="channel-popup" id="channel-popup" hidden aria-hidden="true">
+        <div class="channel-popup-surface" data-popup-surface>
+          <article class="channel-popup-panel channel-shadow" data-popup-panel role="dialog" aria-modal="true" aria-labelledby="channel-popup-title">
+            <div class="channel-popup-showcase">
+              <header class="channel-popup-header">
+                <p class="channel-popup-kicker" data-popup-kicker>section</p>
+                <h2 class="channel-popup-title" id="channel-popup-title" data-popup-title>Title</h2>
+              </header>
+
+              <div class="channel-popup-body" data-popup-body>
+                <section class="channel-view" data-view="about">
+                  <div class="channel-about-layout">
+                    <img class="channel-about-photo" src="assets/profile.jfif" alt="Jack Pastor" />
+                    <div class="channel-about-copy">
+                      <p>
+                        Senior at Penn State pursuing a Bachelor's in Enterprise Technology Integration
+                        with a minor in Data Science. Front-end web development through back-end data
+                        programming — with a soft spot for Web3 and blockchain.
+                      </p>
+                      <p>
+                        Looking for an entry-level role where I can apply what I've built in school
+                        and ship real product with a team that moves.
+                      </p>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="channel-view" data-view="story" hidden>
+                  <div class="channel-story">
+                    <p class="channel-story-lead">
+                      I started tinkering with the web because I wanted things that looked and felt intentional —
+                      not just pages that worked.
+                    </p>
+                    <p>
+                      Penn State sharpened that into systems thinking: how front-end craft, data, and infrastructure
+                      fit together. Side projects and org work (like Penn State IFC) taught me to ship under real
+                      constraints — deadlines, stakeholders, and users who don't care how clever the CSS is.
+                    </p>
+                    <p>
+                      Now I'm focused on building polished interfaces and reliable backends, and finding a team
+                      where curiosity and craft still matter.
+                    </p>
+                  </div>
+                </section>
+
+                <section class="channel-view" data-view="certs" hidden>
+                  <ul class="channel-cert-list">
+                    <li class="channel-cert-item channel-shadow">
+                      <img src="assets/education.png" alt="" />
+                      <div>
+                        <h3>Penn State University</h3>
+                        <p>B.S. Enterprise Technology Integration · Data Science minor</p>
+                      </div>
+                    </li>
+                    <li class="channel-cert-item channel-shadow">
+                      <img src="assets/Databricks.png" alt="" />
+                      <div>
+                        <h3>Databricks</h3>
+                        <p>Data &amp; analytics coursework · platform familiarity</p>
+                      </div>
+                    </li>
+                    <li class="channel-cert-item channel-shadow">
+                      <img src="assets/checkmark.png" alt="" />
+                      <div>
+                        <h3>More coming soon</h3>
+                        <p>Certifications and credentials will land here as they're earned.</p>
+                      </div>
+                    </li>
+                  </ul>
+                </section>
+
+                <section class="channel-view channel-view-arcade" data-view="arcade" hidden>
+                  <div class="zap-shell">
+                    <canvas id="zap-canvas" aria-label="Zap Gallery game"></canvas>
+                    <div class="zap-progress" aria-hidden="true">
+                      <div class="zap-progress-fill" data-zap-bar></div>
+                    </div>
+                    <div class="zap-hud">
+                      <div class="zap-hud-left">
+                        <p class="zap-score" data-zap-score>0</p>
+                        <p class="zap-best" data-zap-best>Best 0</p>
+                      </div>
+                      <div class="zap-hud-center">
+                        <div class="zap-brand-row">
+                          <p class="zap-brand">Zap Gallery</p>
+                          <button class="zap-mute" type="button" data-zap-mute aria-pressed="true" aria-label="Unmute music">
+                            <span class="zap-mute-icon" aria-hidden="true"></span>
+                            <span data-zap-mute-label>Muted</span>
+                          </button>
+                        </div>
+                        <p class="zap-wave" data-zap-wave>Balloons</p>
+                        <p class="zap-combo" data-zap-combo hidden>0 hit combo</p>
+                      </div>
+                      <div class="zap-hud-right">
+                        <p class="zap-time" data-zap-time>2:00</p>
+                        <div class="zap-boss" data-zap-boss hidden>
+                          <span class="zap-boss-label">Boss</span>
+                          <div class="zap-boss-track">
+                            <div class="zap-boss-fill" data-zap-boss-fill></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="zap-overlay" data-zap-overlay>
+                      <p class="zap-overlay-kicker" data-zap-kicker>Arcade</p>
+                      <h3 class="zap-overlay-title" data-zap-title>Zap Gallery</h3>
+                      <p class="zap-overlay-hint" data-zap-hint>2-minute score attack. Progressive waves, then a boss click fight.</p>
+                      <button class="pill-btn zap-start" type="button" data-zap-start>Play</button>
+                    </div>
+                  </div>
+                </section>
+              </div>
             </div>
-          </div>
-          <div class="about-me-container">
-            <p>
-              Senior at Penn State pursuing a <span class="highlight-text-orange">Bachelor's degree</span> in 
-              <span class="highlight-text-green">Enterprise Technology Integration</span> with a minor 
-              in <span class="highlight-text-purple">Data Science</span>. I have a wide array of experience from 
-              <span class="highlight-text-purple">Front-end Web Development</span> 
-              to <span class="highlight-text-orange">Back-end Data Programming</span>. My main interest outside of working and studying is 
-              <span class="highlight-text-blue">Web3 and Blockchain Technology</span>. 
-              Seeking an <span class="highlight-text-green">Entry-Level Position</span> to apply academic knowledge and contribute 
-              to a dynamic team environment. Proficient in the <span class="highlight-text-orange">languages</span> listed below.
-            </p>
-          </div>
-          
+          </article>
         </div>
       </div>
-    </section>
 
-  <!-- Experience Section -->
-<section id="experience" class="fade-in-up">
-    <p class="section__text__p1">Explore My</p>
-    <h1 class="title">Experience</h1>
-    <div class="experience-details-container">
-      <div class="about-containers">
-        <div class="details-container">
-          <h2 class="experience-sub-title">Front-end Development</h2>
-          <div class="article-container">
-            <article>
-              <img src="./assets/checkmark.png" alt="Experience icon" class="CheckmarkIcon" />
-              <div>
-                <h3>HTML</h3>
-                <p>Experienced</p>
-              </div>
-            </article>
-            <article>
-              <img src="./assets/checkmark.png" alt="Experience icon" class="CheckmarkIcon" />
-              <div>
-                <h3>CSS</h3>
-                <p>Experienced</p>
-              </div>
-            </article>
-            <article>
-              <img src="./assets/checkmark.png" alt="Experience icon" class="CheckmarkIcon" />
-              <div>
-                <h3>Javascript</h3>
-                <p>Intermediate</p>
-              </div>
-            </article>
-            <article>
-              <img src="./assets/checkmark.png" alt="Experience icon" class="CheckmarkIcon" />
-              <div>
-                <h3>Python</h3>
-                <p>Experienced</p>
-              </div>
-            </article>
-            <article>
-              <img src="./assets/checkmark.png" alt="Experience icon" class="CheckmarkIcon" />
-              <div>
-                <h3>TypeScript</h3>
-                <p>Learning</p>
-              </div>
-            </article>
-            <article>
-              <img src="./assets/checkmark.png" alt="Experience icon" class="CheckmarkIcon" />
-              <div>
-                <h3>React</h3>
-                <p>Intermediate</p>
-              </div>
-            </article>
+      <div class="dock-shell fade-in-bottom" data-dock>
+        <button class="dock-corner-btn left" type="button" data-dock-home aria-label="Home">
+          <span class="dock-btn-label">Home</span>
+        </button>
+        <button class="dock-corner-btn right" type="button" data-dock-next aria-label="Next">
+          <span class="dock-btn-label">Next</span>
+        </button>
+        <div class="dock-bar">
+          <div class="dock-fill"></div>
+          <img class="dock-notch mirror" src="assets/notch-edge.svg" alt="" />
+          <div class="dock-label-wrap">
+            <p class="dock-label" data-dock-label>Jack Pastor</p>
           </div>
+          <img class="dock-notch" src="assets/notch-edge.svg" alt="" />
+          <div class="dock-fill"></div>
         </div>
-        <div class="details-container">
-          <h2 class="experience-sub-title">Back-end Development</h2>
-          <div class="article-container">
-            <article>
-              <img src="./assets/checkmark.png" alt="Experience icon" class="CheckmarkIcon" />
-              <div>
-                <h3>Databricks</h3>
-                <p>Experienced</p>
-              </div>
-            </article>
-            <article>
-              <img src="./assets/checkmark.png" alt="Experience icon" class="CheckmarkIcon" />
-              <div>
-                <h3>MySQL</h3>
-                <p>Experienced</p>
-              </div>
-            </article>
-            <article>
-              <img src="./assets/checkmark.png" alt="Experience icon" class="CheckmarkIcon" />
-              <div>
-                <h3>Java</h3>
-                <p>Intermediate</p>
-              </div>
-            </article>
-            <article>
-              <img src="./assets/checkmark.png" alt="Experience icon" class="CheckmarkIcon" />
-              <div>
-                <h3>PhP</h3>
-                <p>Intermediate</p>
-              </div>
-            </article>
-            <article>
-                <img src="./assets/checkmark.png" alt="Experience icon" class="CheckmarkIcon" />
-                <div>
-                  <h3>Node.JS</h3>
-                  <p>Intermediate</p>
-                </div>
-              </article>
-              <article>
-                <img src="./assets/checkmark.png" alt="Experience icon" class="CheckmarkIcon" />
-                <div>
-                  <h3>Snowflake</h3>
-                  <p>Learning</p>
-                </div>
-              </article>
-          </div>
-        </div>
+        <div class="dock-base"></div>
       </div>
     </div>
-  </section>
-  
 
-    <!-- Footer Section -->
-    <footer>
-      <div class="footer-container">
-        <!-- Tagline Section -->
-        <div class="footer-tagline">
-          <h2>
-            Always <span class="highlight-aesthetics">reaching</span> 
-            <span class="highlight-functionality">higher</span> 
-          </h2>
-        </div>
-
-        <!-- Explore Section -->
-        <div class="footer-explore">
-          <h3>Explore</h3>
-          <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="#about">About Me</a></li>
-            <li><a href="./assets/JackPastorResume.pdf" target="_blank">Resume</a></li>
-          </ul>
-        </div>
-
-        <!-- Follow Me Section -->
-        <div class="footer-follow">
-          <h3>Follow Me</h3>
-          <ul class="social-links">
-            <li><a href="https://www.linkedin.com/in/jack-pastor-816157223/" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a></li>
-            <li><a href="https://github.com/AverageNftEnjoyer" target="_blank"><i class="fab fa-github"></i> GitHub</a></li>
-            <li><a href="https://leetcode.com/u/AverageNFTEnjoyer/" target="_blank"><i class="fab fa-Leetcode"></i> Leetcode</a></li>
-          </ul>
-        </div>
-
-        <!-- Contact and Projects Section -->
-        <div class="footer-actions">
-            <div class="action-card">
-              <h3>Contact Me</h3>
-              <a href="contact.html" class="action-button arrow-button"><i class="fas fa-arrow-right"></i></a>
-            </div>
-            <div class="action-card">
-              <h3>My Projects</h3>
-              <a href="projects.html" class="action-button arrow-button"><i class="fas fa-arrow-right"></i></a>
-            </div>
-          </div>
-    </footer>
-    <script>
-      if (window.innerWidth <= 768) {
-        window.location.href = "mobile.html";
-      }
-    </script>    
-    <script src="iconfloating.js"></script>
-    <script src="script.js"></script>
-    <script src="Animations.js"></script>
+    <script src="arcade.js"></script>
+    <script src="home.js"></script>
+    <script src="cursor.js"></script>
   </body>
 </html>

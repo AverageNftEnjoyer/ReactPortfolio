@@ -1,22 +1,10 @@
 {
   "name": "jackportfolio",
-  "version": "1.0.0",
-  "type": "module",
-  "main": "server.js",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Jack Pastor portfolio",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "@emailjs/browser": "^4.4.1",
-    "@vercel/speed-insights": "^1.0.12",
-    "dotenv": "^16.4.5",
-    "express": "^4.20.0",
-    "node-fetch": "^3.3.2"
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "prettier": "3.3.3"
