@@ -1,8 +1,6 @@
-/* Zap Gallery — timed score attack + boss finale */
+/* Zap Gallery — skill score attack + boss finale */
 (() => {
   const STORAGE_KEY = "zap-gallery-best";
-  const MUTE_KEY = "zap-gallery-muted";
-  const AUDIO_SRC = "assets/clickergame.mp3";
   const COMBO_START = 5;
   const GAME_MS = 120000;
   const BOSS_AT = 100000;
@@ -13,11 +11,21 @@
   const PHASES = [
     { id: "balloons", until: 22000, label: "Balloons" },
     { id: "targets", until: 44000, label: "Targets" },
-    { id: "disks", until: 66000, label: "Disks" },
-    { id: "fruit", until: 88000, label: "Fruit" },
+    { id: "cans", until: 64000, label: "Cans" },
+    { id: "fruit", until: 86000, label: "Fruit" },
     { id: "saucers", until: BOSS_AT, label: "Saucers" },
     { id: "boss", until: GAME_MS, label: "Boss" },
   ];
+
+  // Wii Play–style caps: sparse, readable, skill-first
+  const CAPS = {
+    balloon: 5,
+    target: 6,
+    can: 2,
+    fruit: 3,
+    saucer: 2,
+    meteor: 1,
+  };
 
   const state = {
     active: false,
@@ -29,14 +37,12 @@
     combo: 0,
     elapsed: 0,
     spawnAcc: 0,
-    duckAcc: 0,
+    meteorAcc: 0,
     targets: [],
     fx: [],
     floats: [],
     shake: 0,
     boss: null,
-    muted: true,
-    audio: null,
     pointer: { x: 0, y: 0, in: false },
     canvas: null,
     ctx: null,
@@ -58,11 +64,23 @@
   function difficulty() {
     const t = state.elapsed / 1000;
     return {
-      speed: 1 + Math.min(1.6, t * 0.014),
-      spawn: Math.max(260, 920 - t * 9),
-      size: Math.max(0.68, 1 - t * 0.0035),
-      count: 1 + Math.min(3, (t / 40) | 0),
+      speed: 1 + Math.min(1.35, t * 0.012),
+      spawn: Math.max(420, 1100 - t * 6),
+      size: Math.max(0.78, 1 - t * 0.0025),
     };
+  }
+
+  function comboBonus(combo) {
+    if (combo >= 100) return 5;
+    if (combo >= 50) return 4;
+    if (combo >= 25) return 3;
+    if (combo >= 10) return 2;
+    if (combo >= COMBO_START) return 1;
+    return 0;
+  }
+
+  function countType(type) {
+    return state.targets.filter((t) => t.type === type).length;
   }
 
   function loadBest() {
@@ -82,84 +100,24 @@
     }
   }
 
-  function loadMuted() {
-    try {
-      const v = localStorage.getItem(MUTE_KEY);
-      if (v === null) return true;
-      return v === "1";
-    } catch {
-      return true;
-    }
-  }
-
-  function saveMuted(muted) {
-    try {
-      localStorage.setItem(MUTE_KEY, muted ? "1" : "0");
-    } catch {
-      /* ignore */
-    }
-  }
-
-  function ensureAudio() {
-    if (state.audio) return state.audio;
-    const a = new Audio(AUDIO_SRC);
-    a.loop = true;
-    a.preload = "auto";
-    a.volume = 0.45;
-    state.audio = a;
-    return a;
-  }
-
-  function syncAudio() {
-    const a = ensureAudio();
-    if (!state.active || state.muted || state.mode !== "playing") {
-      a.pause();
-      return;
-    }
-    a.play().catch(() => {});
-  }
-
-  function updateMuteBtn() {
-    const btn = state.els.mute;
-    if (!btn) return;
-    btn.setAttribute("aria-pressed", state.muted ? "true" : "false");
-    btn.setAttribute("aria-label", state.muted ? "Unmute music" : "Mute music");
-    btn.classList.toggle("is-muted", state.muted);
-    const label = btn.querySelector("[data-zap-mute-label]");
-    if (label) label.textContent = state.muted ? "Muted" : "Music";
-  }
-
-  function setMuted(muted) {
-    state.muted = muted;
-    saveMuted(muted);
-    updateMuteBtn();
-    syncAudio();
-  }
-
   function updateHud() {
-    const { score, best, combo, wave, time, bar, bossWrap, bossFill } = state.els;
+    const { score, best, combo, wave, bossWrap, bossFill } = state.els;
     if (score) score.textContent = String(state.score);
     if (best) best.textContent = `Best ${state.best}`;
 
     const phase = phaseAt(state.elapsed);
     if (wave) wave.textContent = phase.label;
 
-    const left = Math.max(0, GAME_MS - state.elapsed);
-    const secs = Math.ceil(left / 1000);
-    if (time) {
-      const m = Math.floor(secs / 60);
-      const s = secs % 60;
-      time.textContent = `${m}:${String(s).padStart(2, "0")}`;
-    }
-    if (bar) {
-      const p = clamp(state.elapsed / GAME_MS, 0, 1);
-      bar.style.transform = `scaleX(${p})`;
-    }
-
     if (combo) {
       const show = state.mode === "playing" && state.combo >= COMBO_START;
       combo.hidden = !show;
-      if (show) combo.textContent = `${state.combo} hit combo`;
+      if (show) {
+        const b = comboBonus(state.combo);
+        combo.textContent =
+          b > 1
+            ? `${state.combo} combo · +${b}/hit`
+            : `${state.combo} hit combo`;
+      }
     }
 
     if (bossWrap && bossFill) {
@@ -180,12 +138,12 @@
     if (hint)
       hint.textContent =
         opts.hint ??
-        "2-minute score attack. Zap everything, then take down the boss.";
+        "Skill run: limited targets, rising combos, then a teleporting boss.";
     if (start) start.textContent = opts.cta ?? "Play";
   }
 
   function addFloat(x, y, text, color) {
-    state.floats.push({ x, y, text, color, life: 1, vy: -0.9 });
+    state.floats.push({ x, y, text, color, life: 1, vy: -0.95 });
   }
 
   function addFx(x, y, kind, color) {
@@ -197,18 +155,19 @@
       life: 1,
       r: kind === "miss" ? 10 : 8,
     });
-    for (let i = 0; i < (kind === "hit" ? 10 : 5); i++) {
+    const n = kind === "hit" ? 12 : 5;
+    for (let i = 0; i < n; i++) {
       const a = rand(0, Math.PI * 2);
-      const sp = rand(1.2, kind === "hit" ? 5.5 : 3.2);
+      const sp = rand(1.2, kind === "hit" ? 6 : 3);
       state.fx.push({
         x,
         y,
         kind: "spark",
-        color: kind === "hit" ? color || "#fff" : "rgba(30,40,50,0.55)",
-        life: rand(0.45, 0.9),
+        color: kind === "hit" ? color || "#fff" : "rgba(30,40,50,0.5)",
+        life: rand(0.4, 0.85),
         vx: Math.cos(a) * sp,
         vy: Math.sin(a) * sp,
-        r: rand(1.5, 3.2),
+        r: rand(1.4, 3.2),
       });
     }
   }
@@ -222,7 +181,6 @@
       saveBest(state.best);
     }
     updateHud();
-    syncAudio();
     setOverlay(true, {
       kicker: opts.kicker,
       title: opts.title,
@@ -234,17 +192,13 @@
   function endByTimer() {
     const boss = state.boss;
     let extra = "";
-    if (boss && boss.hp > 0) {
-      const dealt = boss.maxHp - boss.hp;
-      extra = ` Boss damaged ${dealt}/${boss.maxHp}.`;
-    } else if (boss && boss.hp <= 0) {
-      extra = " Boss cleared!";
-    }
+    if (boss && boss.hp > 0) extra = ` Boss HP left ${boss.hp}.`;
+    else if (boss && boss.hp <= 0) extra = " Boss cleared!";
     finishRun({
-      kicker: "Time's Up",
+      kicker: "Run Complete",
       title: `Score ${state.score}`,
       hint:
-        (state.score >= state.best && state.score > 0 ? "New best!" : "Run complete.") +
+        (state.score >= state.best && state.score > 0 ? "New best!" : "Nice run.") +
         extra,
     });
   }
@@ -254,7 +208,7 @@
     state.combo = 0;
     state.elapsed = 0;
     state.spawnAcc = 0;
-    state.duckAcc = 0;
+    state.meteorAcc = 0;
     state.targets = [];
     state.fx = [];
     state.floats = [];
@@ -268,40 +222,42 @@
     resetRun();
     state.mode = "playing";
     setOverlay(false);
-    for (let i = 0; i < 3; i++) spawnForPhase();
-    syncAudio();
+    spawnForPhase();
     updateHud();
   }
 
+  /* —— spawners —— */
   function spawnBalloon() {
-    const colors = ["#e85d5d", "#3cc0ec", "#f0c14a", "#6fbf73", "#c47adf"];
+    if (countType("balloon") >= CAPS.balloon) return;
+    const colors = ["#e44747", "#2eb0e0", "#efc233"];
     const color = pick(colors);
-    const r = 22 * difficulty().size * rand(0.9, 1.15);
-    const margin = r + 8;
+    const r = 24 * difficulty().size * rand(0.95, 1.1);
+    const margin = r + 10;
     state.targets.push({
       type: "balloon",
       x: rand(margin, state.w - margin),
-      y: state.h - margin - rand(20, 120),
+      y: state.h - margin - rand(10, 80),
       r,
       color,
-      vy: -rand(1.0, 1.7) * difficulty().speed,
-      vx: rand(-0.7, 0.7),
+      vy: -rand(1.05, 1.55) * difficulty().speed,
+      vx: rand(-0.55, 0.55),
       wobble: rand(0, Math.PI * 2),
-      life: rand(7000, 11000),
+      life: rand(8000, 12000),
       points: 1,
-      hitR: r * 0.85,
+      hitR: r * 0.88,
     });
   }
 
   function spawnBullseye() {
-    const gold = Math.random() < 0.12;
+    if (countType("target") >= CAPS.target) return;
+    const gold = Math.random() < 0.14;
     const penalty = !gold && Math.random() < 0.1;
-    const r = (gold ? 34 : 30) * difficulty().size * rand(0.85, 1.1);
-    const life = rand(2200, 3400) / difficulty().speed;
+    const r = (gold ? 36 : 32) * difficulty().size * rand(0.9, 1.05);
+    const life = rand(2400, 3600) / difficulty().speed;
     state.targets.push({
       type: "target",
-      x: rand(r + 30, state.w - r - 30),
-      y: rand(r + 80, state.h - r - 40),
+      x: rand(r + 36, state.w - r - 36),
+      y: rand(r + 90, state.h - r - 50),
       r,
       maxR: r,
       life,
@@ -314,118 +270,142 @@
     });
   }
 
-  function spawnDisk() {
+  function spawnCan() {
+    if (countType("can") >= CAPS.can) return;
     const fromLeft = Math.random() < 0.5;
-    const r = 16 * difficulty().size;
-    const y = rand(state.h * 0.28, state.h * 0.68);
+    const r = 20 * difficulty().size;
     state.targets.push({
-      type: "disk",
-      x: fromLeft ? -r - 10 : state.w + r + 10,
-      y,
+      type: "can",
+      x: fromLeft ? rand(50, state.w * 0.35) : rand(state.w * 0.65, state.w - 50),
+      y: state.h - 40,
       r,
-      vx: (fromLeft ? 1 : -1) * rand(3.2, 5.2) * difficulty().speed,
-      vy: -rand(2.2, 4.2) * difficulty().speed,
-      g: 0.085 * difficulty().speed,
-      rot: rand(0, Math.PI * 2),
-      spin: rand(-0.25, 0.25),
-      points: 2,
-      hitR: r * 1.1,
-      color: pick(["#c4a484", "#d2b48c", "#b8956c"]),
+      vx: (fromLeft ? 1 : -1) * rand(0.6, 1.3) * difficulty().speed,
+      vy: -rand(6.5, 8.8) * difficulty().speed,
+      g: 0.2,
+      rot: rand(-0.2, 0.2),
+      spin: rand(-0.08, 0.08),
+      hp: 2,
+      maxHp: 2,
+      points: 4,
+      hitR: r * 1.15,
+      label: pick(["SODA", "POP", "ZAP"]),
+      tint: pick(["#c45c3e", "#3d7ea6", "#d4a017"]),
     });
   }
 
   function spawnFruit() {
+    if (countType("fruit") >= CAPS.fruit) return;
     const kinds = [
-      { name: "apple", color: "#d64545", leaf: "#4f8a3a", points: 2 },
-      { name: "orange", color: "#e8913a", leaf: null, points: 2 },
-      { name: "banana", color: "#f0d24a", leaf: null, points: 3 },
-      { name: "grape", color: "#7b5ea7", leaf: "#4f8a3a", points: 2 },
+      { name: "apple", color: "#e23b3b", accent: "#8f1f1f", leaf: "#3f8f3a", points: 2 },
+      { name: "orange", color: "#f08a24", accent: "#c45e10", leaf: null, points: 2 },
+      { name: "banana", color: "#f5d447", accent: "#c9a61a", leaf: null, points: 3 },
+      { name: "watermelon", color: "#2f9e57", accent: "#d64545", leaf: null, points: 3 },
     ];
     const kind = pick(kinds);
     const fromLeft = Math.random() < 0.5;
-    const r = 18 * difficulty().size;
+    const r = 32 * difficulty().size * rand(0.95, 1.12);
     state.targets.push({
       type: "fruit",
       fruit: kind.name,
       color: kind.color,
+      accent: kind.accent,
       leaf: kind.leaf,
-      x: fromLeft ? rand(40, 120) : rand(state.w - 120, state.w - 40),
-      y: state.h - 30,
+      x: fromLeft ? rand(60, 140) : rand(state.w - 140, state.w - 60),
+      y: state.h + 10,
       r,
-      vx: (fromLeft ? 1 : -1) * rand(1.8, 3.4) * difficulty().speed,
-      vy: -rand(7.5, 10.5) * difficulty().speed,
-      g: 0.18,
+      vx: (fromLeft ? 1 : -1) * rand(1.4, 2.4) * difficulty().speed,
+      vy: -rand(8.2, 10.2) * difficulty().speed,
+      g: 0.2,
       rot: rand(0, Math.PI * 2),
-      spin: rand(-0.12, 0.12),
+      spin: rand(-0.08, 0.08),
       points: kind.points,
-      hitR: r * 1.05,
+      hitR: r * 1.08,
     });
   }
 
   function spawnSaucer() {
-    const r = 28 * difficulty().size * rand(0.9, 1.15);
+    if (countType("saucer") >= CAPS.saucer) return;
+    const r = 30 * difficulty().size;
+    const fromTop = Math.random() < 0.55;
+    const gold = Math.random() < 0.18;
     state.targets.push({
       type: "saucer",
-      x: rand(r + 40, state.w - r - 40),
-      y: r + rand(40, 120),
+      x: rand(r + 50, state.w - r - 50),
+      y: fromTop ? -r - 10 : rand(state.h * 0.2, state.h * 0.45),
       r,
-      vx: rand(-1.4, 1.4) * difficulty().speed,
-      vy: rand(-0.4, 0.9) * difficulty().speed,
+      vx: rand(-1.1, 1.1) * difficulty().speed,
+      vy: fromTop ? rand(0.7, 1.2) * difficulty().speed : rand(-0.35, 0.55),
       wobble: rand(0, Math.PI * 2),
-      beam: Math.random() < 0.35,
-      life: rand(8000, 12000),
-      points: 3,
-      hitR: r * 0.9,
+      beam: Math.random() < 0.45,
+      life: rand(7000, 10000),
+      gold,
+      points: gold ? 5 : 3,
+      hitR: r * 0.92,
     });
   }
 
-  function spawnDuck() {
+  function spawnMeteor() {
+    if (countType("meteor") >= CAPS.meteor) return;
     const fromLeft = Math.random() < 0.5;
+    const r = 18;
     state.targets.push({
-      type: "duck",
+      type: "meteor",
       x: fromLeft ? -40 : state.w + 40,
-      y: rand(90, state.h * 0.42),
-      r: 20,
-      vx: (fromLeft ? 1 : -1) * rand(3.5, 5) * difficulty().speed,
-      bob: rand(0, Math.PI * 2),
-      points: 15,
+      y: rand(60, state.h * 0.4),
+      r,
+      vx: (fromLeft ? 1 : -1) * rand(5.5, 7.5) * difficulty().speed,
+      vy: rand(1.2, 2.8) * difficulty().speed,
+      rot: rand(0, Math.PI * 2),
+      spin: rand(0.1, 0.25) * (fromLeft ? 1 : -1),
+      points: 20,
       hitR: 22,
-      facing: fromLeft ? 1 : -1,
+      trail: [],
     });
   }
 
   function spawnBoss() {
     if (state.boss) return;
-    const r = Math.min(70, state.w * 0.1);
+    const r = Math.min(78, state.w * 0.11);
     const boss = {
       type: "boss",
       x: state.w * 0.5,
-      y: state.h * 0.32,
+      y: state.h * 0.3,
       r,
-      vx: 1.6,
-      wobble: 0,
       hp: BOSS_HP,
       maxHp: BOSS_HP,
-      hitR: r * 1.15,
+      hitR: r * 1.05,
       points: BOSS_HIT_PTS,
+      teleportIn: 0,
+      nextTeleport: 900,
+      flash: 0,
+      angle: 0,
     };
     state.boss = boss;
-    state.targets.push(boss);
-    state.targets = state.targets.filter((t) => t.type === "boss" || t.type === "duck");
-    addFloat(state.w * 0.5, state.h * 0.2, "BOSS!", "#f0c14a");
+    state.targets = [boss];
+    addFloat(state.w * 0.5, state.h * 0.18, "BOSS!", "#f0c14a");
     updateHud();
+  }
+
+  function teleportBoss(boss) {
+    const m = boss.r + 30;
+    boss.x = rand(m, state.w - m);
+    boss.y = rand(m + 40, state.h * 0.55);
+    boss.teleportIn = 1;
+    boss.nextTeleport = rand(700, 1400);
+    addFx(boss.x, boss.y, "hit", "#b388ff");
   }
 
   function spawnForPhase() {
     const phase = phaseAt(state.elapsed).id;
     if (phase === "boss") return;
-    const n = difficulty().count;
-    for (let i = 0; i < n; i++) {
-      if (phase === "balloons") spawnBalloon();
-      else if (phase === "targets") spawnBullseye();
-      else if (phase === "disks") spawnDisk();
-      else if (phase === "fruit") spawnFruit();
-      else spawnSaucer();
+    if (phase === "balloons") spawnBalloon();
+    else if (phase === "targets") spawnBullseye();
+    else if (phase === "cans") {
+      // sparse: often skip a spawn tick
+      if (Math.random() < 0.45) spawnCan();
+    } else if (phase === "fruit") spawnFruit();
+    else if (phase === "saucers") {
+      if (Math.random() < 0.55) spawnSaucer();
     }
   }
 
@@ -444,16 +424,11 @@
 
   function scoreHit(pts, x, y, color, big) {
     state.combo += 1;
-    let bonus = 0;
-    if (state.combo >= COMBO_START) bonus = 1;
+    const bonus = comboBonus(state.combo);
     state.score += pts + bonus;
     addFx(x, y, "hit", color);
-    addFloat(
-      x,
-      y - 12,
-      bonus ? `+${pts + bonus}` : `+${pts}`,
-      big ? "#f0c14a" : "#fff"
-    );
+    const label = bonus ? `+${pts + bonus}` : `+${pts}`;
+    addFloat(x, y - 12, label, big || bonus >= 2 ? "#f0c14a" : "#fff");
     state.shake = big ? 7 : 3;
     updateHud();
   }
@@ -467,8 +442,9 @@
 
       if (t.type === "boss") {
         t.hp -= 1;
-        scoreHit(BOSS_HIT_PTS, x, y, "#7b5ea7", true);
+        scoreHit(BOSS_HIT_PTS, x, y, "#c9a0ff", true);
         t.flash = 1;
+        teleportBoss(t);
         if (t.hp <= 0) {
           state.targets.splice(i, 1);
           state.boss = null;
@@ -482,10 +458,31 @@
             title: `Score ${state.score}`,
             hint:
               state.score >= state.best && state.score > 0
-                ? "New best — perfect run energy."
+                ? "New best — mothership down."
                 : "Mothership down. Play again?",
           });
         }
+        return;
+      }
+
+      if (t.type === "can") {
+        t.hp -= 1;
+        t.vy = -rand(7, 10);
+        t.vx += rand(-1.2, 1.2);
+        t.spin += rand(-0.15, 0.15);
+        t.flash = 1;
+        if (t.hp > 0) {
+          state.combo += 1;
+          const bonus = comboBonus(state.combo);
+          state.score += 1 + bonus;
+          addFx(x, y, "hit", t.tint);
+          addFloat(x, y - 10, bonus ? `+${1 + bonus}` : "+1", "#fff");
+          state.shake = 4;
+          updateHud();
+          return;
+        }
+        state.targets.splice(i, 1);
+        scoreHit(t.points, x, y, t.tint, true);
         return;
       }
 
@@ -494,6 +491,7 @@
       let pts = t.points;
       if (t.type === "balloon" && state._lastBalloonColor === t.color) pts = 2;
       if (t.type === "balloon") state._lastBalloonColor = t.color;
+      if (t.type === "saucer" && t.gold) pts = 5;
 
       if (pts < 0) {
         state.combo = 0;
@@ -504,8 +502,12 @@
         updateHud();
       } else {
         const color =
-          t.type === "duck" ? "#f0c14a" : t.gold ? "#f0c14a" : t.color || "#3cc0ec";
-        scoreHit(pts, x, y, color, t.gold || t.type === "duck");
+          t.type === "meteor"
+            ? "#ff7a3d"
+            : t.gold
+              ? "#f0c14a"
+              : t.color || t.tint || "#3cc0ec";
+        scoreHit(pts, x, y, color, t.gold || t.type === "meteor");
       }
       return;
     }
@@ -521,15 +523,15 @@
     const m = t.r + 4;
     if (t.x < m) {
       t.x = m;
-      t.vx = Math.abs(t.vx) + 0.15;
+      t.vx = Math.abs(t.vx) + 0.12;
     } else if (t.x > state.w - m) {
       t.x = state.w - m;
-      t.vx = -Math.abs(t.vx) - 0.15;
+      t.vx = -Math.abs(t.vx) - 0.12;
     }
-    if (t.y < m + 50) {
-      t.y = m + 50;
-      t.vy = Math.abs(t.vy) * 0.55 + 0.35;
-      t.vx += rand(-0.4, 0.4);
+    if (t.y < m + 56) {
+      t.y = m + 56;
+      t.vy = Math.abs(t.vy) * 0.5 + 0.3;
+      t.vx += rand(-0.35, 0.35);
     } else if (t.y > state.h - m) {
       t.y = state.h - m;
       t.vy = -Math.abs(t.vy);
@@ -540,39 +542,40 @@
     const dead = [];
     for (let i = 0; i < state.targets.length; i++) {
       const t = state.targets[i];
+      if (t.flash > 0) t.flash = Math.max(0, t.flash - dt * 0.008);
+
       if (t.type === "balloon") {
         t.life -= dt;
         t.wobble += dt * 0.004;
-        t.x += (t.vx + Math.sin(t.wobble) * 0.45) * (dt / 16.67);
+        t.x += (t.vx + Math.sin(t.wobble) * 0.4) * (dt / 16.67);
         t.y += t.vy * (dt / 16.67);
-        // soft gravity drift so they don't pin to the ceiling
-        t.vy += 0.01 * (dt / 16.67);
+        t.vy += 0.012 * (dt / 16.67);
         bounceBalloon(t);
         if (t.life <= 0) dead.push(i);
       } else if (t.type === "target") {
         t.appear = Math.min(1, t.appear + dt / 180);
         t.life -= dt;
         const p = clamp(t.life / t.maxLife, 0, 1);
-        t.r = t.maxR * (0.35 + 0.65 * p);
+        t.r = t.maxR * (0.4 + 0.6 * p);
         if (t.life <= 0) dead.push(i);
-      } else if (t.type === "disk") {
+      } else if (t.type === "can") {
         t.vy += t.g * (dt / 16.67);
         t.x += t.vx * (dt / 16.67);
         t.y += t.vy * (dt / 16.67);
         t.rot += t.spin;
-        if (t.y > state.h + 40 || t.x < -60 || t.x > state.w + 60) dead.push(i);
+        if (t.y > state.h + 60 || t.x < -80 || t.x > state.w + 80) dead.push(i);
       } else if (t.type === "fruit") {
         t.vy += t.g * (dt / 16.67);
         t.x += t.vx * (dt / 16.67);
         t.y += t.vy * (dt / 16.67);
         t.rot += t.spin;
-        if (t.y > state.h + 50 || t.x < -50 || t.x > state.w + 50) dead.push(i);
+        if (t.y > state.h + 60 || t.x < -60 || t.x > state.w + 60) dead.push(i);
       } else if (t.type === "saucer") {
         t.life -= dt;
         t.wobble += dt * 0.003;
-        t.x += (t.vx + Math.sin(t.wobble) * 0.6) * (dt / 16.67);
+        t.x += (t.vx + Math.sin(t.wobble) * 0.5) * (dt / 16.67);
         t.y += t.vy * (dt / 16.67);
-        const m = t.r + 6;
+        const m = t.r + 8;
         if (t.x < m) {
           t.x = m;
           t.vx = Math.abs(t.vx);
@@ -581,34 +584,29 @@
           t.x = state.w - m;
           t.vx = -Math.abs(t.vx);
         }
-        if (t.y < m + 40) {
-          t.y = m + 40;
-          t.vy = Math.abs(t.vy) * 0.6;
+        if (t.y < m + 50) {
+          t.y = m + 50;
+          t.vy = Math.abs(t.vy) * 0.5;
         }
-        if (t.y > state.h - m - 10) {
-          t.y = state.h - m - 10;
+        if (t.y > state.h * 0.72) {
+          t.y = state.h * 0.72;
           t.vy = -Math.abs(t.vy);
         }
         if (t.life <= 0) dead.push(i);
-      } else if (t.type === "duck") {
-        t.bob += dt * 0.008;
+      } else if (t.type === "meteor") {
+        t.trail.push({ x: t.x, y: t.y, life: 1 });
+        if (t.trail.length > 10) t.trail.shift();
+        for (const p of t.trail) p.life -= dt * 0.004;
+        t.trail = t.trail.filter((p) => p.life > 0);
         t.x += t.vx * (dt / 16.67);
-        t.y += Math.sin(t.bob) * 0.55;
-        if (t.x < -60 || t.x > state.w + 60) dead.push(i);
+        t.y += t.vy * (dt / 16.67);
+        t.rot += t.spin;
+        if (t.x < -80 || t.x > state.w + 80 || t.y > state.h + 80) dead.push(i);
       } else if (t.type === "boss") {
-        t.wobble += dt * 0.003;
-        t.x += t.vx * (dt / 16.67);
-        t.y = state.h * 0.32 + Math.sin(t.wobble) * 28;
-        const m = t.r + 20;
-        if (t.x < m) {
-          t.x = m;
-          t.vx = Math.abs(t.vx);
-        }
-        if (t.x > state.w - m) {
-          t.x = state.w - m;
-          t.vx = -Math.abs(t.vx);
-        }
-        if (t.flash > 0) t.flash = Math.max(0, t.flash - dt * 0.008);
+        t.angle += dt * 0.002;
+        if (t.teleportIn > 0) t.teleportIn = Math.max(0, t.teleportIn - dt * 0.004);
+        t.nextTeleport -= dt;
+        if (t.nextTeleport <= 0) teleportBoss(t);
       }
     }
     for (let i = dead.length - 1; i >= 0; i--) state.targets.splice(dead[i], 1);
@@ -648,22 +646,24 @@
         if (prevPhase !== "boss") spawnBoss();
       } else {
         const diff = difficulty();
+        const interval =
+          phase === "cans" ? diff.spawn * 1.8 : phase === "saucers" ? diff.spawn * 1.45 : diff.spawn;
         state.spawnAcc += dt;
-        while (state.spawnAcc >= diff.spawn) {
-          state.spawnAcc -= diff.spawn;
+        while (state.spawnAcc >= interval) {
+          state.spawnAcc -= interval;
           spawnForPhase();
         }
-        state.duckAcc += dt;
-        if (state.duckAcc >= 14000) {
-          state.duckAcc = 0;
-          spawnDuck();
+        state.meteorAcc += dt;
+        if (state.meteorAcc >= 16000) {
+          state.meteorAcc = 0;
+          spawnMeteor();
         }
       }
 
       updateTargets(dt);
       updateHud();
     } else if (state.mode === "idle") {
-      if (state.targets.length < 5 && Math.random() < 0.03) spawnBalloon();
+      if (countType("balloon") < 3 && Math.random() < 0.02) spawnBalloon();
       updateTargets(dt * 0.7);
     }
 
@@ -673,44 +673,44 @@
   /* —— draw —— */
   function drawBackground(ctx) {
     const g = ctx.createLinearGradient(0, 0, 0, state.h);
-    g.addColorStop(0, "#7eb6d9");
-    g.addColorStop(0.45, "#b7d8ea");
-    g.addColorStop(0.72, "#d9e8c8");
-    g.addColorStop(1, "#c3d4a8");
+    g.addColorStop(0, "#6aa9d4");
+    g.addColorStop(0.42, "#a9d0e6");
+    g.addColorStop(0.7, "#cfe3b5");
+    g.addColorStop(1, "#b5c98a");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, state.w, state.h);
 
-    ctx.fillStyle = "#9bb87e";
+    ctx.fillStyle = "#8fb56e";
     ctx.beginPath();
-    ctx.moveTo(0, state.h * 0.72);
-    ctx.quadraticCurveTo(state.w * 0.25, state.h * 0.62, state.w * 0.5, state.h * 0.7);
-    ctx.quadraticCurveTo(state.w * 0.75, state.h * 0.78, state.w, state.h * 0.66);
+    ctx.moveTo(0, state.h * 0.74);
+    ctx.quadraticCurveTo(state.w * 0.28, state.h * 0.64, state.w * 0.52, state.h * 0.72);
+    ctx.quadraticCurveTo(state.w * 0.78, state.h * 0.8, state.w, state.h * 0.68);
     ctx.lineTo(state.w, state.h);
     ctx.lineTo(0, state.h);
     ctx.fill();
 
-    ctx.fillStyle = "#8aab6c";
+    ctx.fillStyle = "#7a9f5c";
     ctx.beginPath();
-    ctx.moveTo(0, state.h * 0.82);
-    ctx.quadraticCurveTo(state.w * 0.3, state.h * 0.74, state.w * 0.55, state.h * 0.84);
-    ctx.quadraticCurveTo(state.w * 0.8, state.h * 0.9, state.w, state.h * 0.8);
+    ctx.moveTo(0, state.h * 0.84);
+    ctx.quadraticCurveTo(state.w * 0.33, state.h * 0.76, state.w * 0.58, state.h * 0.86);
+    ctx.quadraticCurveTo(state.w * 0.82, state.h * 0.92, state.w, state.h * 0.82);
     ctx.lineTo(state.w, state.h);
     ctx.lineTo(0, state.h);
     ctx.fill();
 
-    ctx.fillStyle = "rgba(255,255,255,0.45)";
-    const drift = (state.elapsed * 0.01) % (state.w + 200);
+    ctx.fillStyle = "rgba(255,255,255,0.42)";
+    const drift = (state.elapsed * 0.008) % (state.w + 200);
     [
-      [120, 70, 40],
-      [360, 100, 32],
-      [620, 55, 48],
-      [880, 90, 28],
+      [100, 64, 36],
+      [340, 92, 28],
+      [580, 50, 44],
+      [820, 84, 26],
     ].forEach(([cx, cy, r], i) => {
-      const x = ((cx - drift * (0.3 + i * 0.05)) % (state.w + 160)) - 80;
+      const x = ((cx - drift * (0.25 + i * 0.04)) % (state.w + 160)) - 80;
       ctx.beginPath();
       ctx.arc(x, cy, r, 0, Math.PI * 2);
-      ctx.arc(x + r * 0.75, cy + 4, r * 0.7, 0, Math.PI * 2);
-      ctx.arc(x - r * 0.6, cy + 6, r * 0.6, 0, Math.PI * 2);
+      ctx.arc(x + r * 0.7, cy + 5, r * 0.65, 0, Math.PI * 2);
+      ctx.arc(x - r * 0.55, cy + 6, r * 0.55, 0, Math.PI * 2);
       ctx.fill();
     });
   }
@@ -718,25 +718,32 @@
   function drawBalloon(ctx, t) {
     ctx.save();
     ctx.translate(t.x, t.y);
-    ctx.strokeStyle = "rgba(30,40,50,0.35)";
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "rgba(30,40,50,0.4)";
+    ctx.lineWidth = 1.6;
     ctx.beginPath();
-    ctx.moveTo(0, t.r * 0.9);
-    ctx.quadraticCurveTo(4, t.r + 18, 0, t.r + 34);
+    ctx.moveTo(0, t.r * 0.92);
+    ctx.quadraticCurveTo(6, t.r + 16, 1, t.r + 36);
     ctx.stroke();
-    const g = ctx.createRadialGradient(-t.r * 0.3, -t.r * 0.35, 2, 0, 0, t.r);
-    g.addColorStop(0, "#fff");
-    g.addColorStop(0.2, t.color);
+    const g = ctx.createRadialGradient(-t.r * 0.35, -t.r * 0.4, 2, 0, 0, t.r);
+    g.addColorStop(0, "#ffffff");
+    g.addColorStop(0.18, t.color);
     g.addColorStop(1, t.color);
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.ellipse(0, 0, t.r * 0.85, t.r, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, t.r * 0.82, t.r, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(0,0,0,0.12)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
+    ctx.beginPath();
+    ctx.ellipse(-t.r * 0.28, -t.r * 0.35, t.r * 0.18, t.r * 0.28, -0.4, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = t.color;
     ctx.beginPath();
-    ctx.moveTo(-4, t.r * 0.85);
-    ctx.lineTo(4, t.r * 0.85);
-    ctx.lineTo(0, t.r * 0.85 + 8);
+    ctx.moveTo(-5, t.r * 0.88);
+    ctx.lineTo(5, t.r * 0.88);
+    ctx.lineTo(0, t.r * 0.88 + 9);
     ctx.fill();
     ctx.restore();
   }
@@ -747,56 +754,84 @@
     ctx.translate(t.x, t.y);
     ctx.scale(s * (t.r / t.maxR), s * (t.r / t.maxR));
     const R = t.maxR;
+    ctx.beginPath();
+    ctx.arc(0, 4, R * 1.02, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0,0,0,0.12)";
+    ctx.fill();
     if (t.penalty) {
-      ctx.fillStyle = "#f0f0f0";
+      ctx.fillStyle = "#f4f4f4";
       ctx.beginPath();
       ctx.arc(0, 0, R, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = "#2c2c2c";
+      ctx.strokeStyle = "#222";
       ctx.lineWidth = 3;
       ctx.stroke();
-      ctx.fillStyle = "#2c2c2c";
+      ctx.fillStyle = "#222";
       ctx.beginPath();
-      ctx.arc(-R * 0.28, -R * 0.15, R * 0.1, 0, Math.PI * 2);
-      ctx.arc(R * 0.28, -R * 0.15, R * 0.1, 0, Math.PI * 2);
+      ctx.arc(-R * 0.28, -R * 0.12, R * 0.1, 0, Math.PI * 2);
+      ctx.arc(R * 0.28, -R * 0.12, R * 0.1, 0, Math.PI * 2);
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(0, R * 0.25, R * 0.28, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.arc(0, R * 0.28, R * 0.28, 0.1 * Math.PI, 0.9 * Math.PI);
       ctx.stroke();
-      ctx.fillStyle = "#e85d5d";
-      ctx.font = `bold ${Math.floor(R * 0.35)}px SpaceGrotesk, sans-serif`;
+      ctx.fillStyle = "#e44747";
+      ctx.font = `bold ${Math.floor(R * 0.34)}px SpaceGrotesk, sans-serif`;
       ctx.textAlign = "center";
-      ctx.fillText("-3", 0, R * 0.85);
-    } else if (t.gold) {
-      ["#f0c14a", "#fff6d6", "#e8a03a", "#fff", "#d4920f"].forEach((c, i) => {
-        ctx.fillStyle = c;
-        ctx.beginPath();
-        ctx.arc(0, 0, R * (1 - i * 0.18), 0, Math.PI * 2);
-        ctx.fill();
-      });
+      ctx.fillText("-3", 0, R * 0.82);
     } else {
-      ["#2c2c2c", "#f5f5f5", "#2c2c2c", "#f5f5f5", "#e85d5d"].forEach((c, i) => {
+      const rings = t.gold
+        ? ["#f0c14a", "#fff4c2", "#e09a14", "#fff", "#c9840a"]
+        : ["#1f1f1f", "#f2f2f2", "#1f1f1f", "#f2f2f2", "#e44747"];
+      rings.forEach((c, i) => {
         ctx.fillStyle = c;
         ctx.beginPath();
-        ctx.arc(0, 0, R * (1 - i * 0.18), 0, Math.PI * 2);
+        ctx.arc(0, 0, R * (1 - i * 0.17), 0, Math.PI * 2);
         ctx.fill();
       });
     }
     ctx.restore();
   }
 
-  function drawDisk(ctx, t) {
+  function drawCan(ctx, t) {
     ctx.save();
     ctx.translate(t.x, t.y);
     ctx.rotate(t.rot);
-    ctx.scale(1, 0.35);
-    ctx.fillStyle = t.color;
+    const w = t.r * 1.15;
+    const h = t.r * 1.7;
+    ctx.fillStyle = "rgba(0,0,0,0.15)";
     ctx.beginPath();
-    ctx.arc(0, 0, t.r, 0, Math.PI * 2);
+    ctx.ellipse(2, h * 0.45, w * 0.9, 6, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = "rgba(80,50,20,0.35)";
+    const body = ctx.createLinearGradient(-w, 0, w, 0);
+    body.addColorStop(0, "#8a8f94");
+    body.addColorStop(0.2, "#d7dbe0");
+    body.addColorStop(0.5, "#f4f6f8");
+    body.addColorStop(0.8, "#c5cad0");
+    body.addColorStop(1, "#7e848a");
+    ctx.fillStyle = body;
+    ctx.fillRect(-w * 0.7, -h * 0.55, w * 1.4, h);
+    ctx.fillStyle = t.tint;
+    ctx.fillRect(-w * 0.7, -h * 0.18, w * 1.4, h * 0.4);
+    ctx.fillStyle = "#fff";
+    ctx.font = `bold ${Math.max(9, t.r * 0.45)}px SpaceGrotesk, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(t.label, 0, h * 0.02);
+    ctx.strokeStyle = "rgba(40,45,50,0.35)";
     ctx.lineWidth = 2;
-    ctx.stroke();
+    ctx.strokeRect(-w * 0.7, -h * 0.55, w * 1.4, h);
+    ctx.fillStyle = "#eceff2";
+    ctx.beginPath();
+    ctx.ellipse(0, -h * 0.55, w * 0.7, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (t.hp < t.maxHp) {
+      ctx.fillStyle = "rgba(255,255,255,0.28)";
+      ctx.fillRect(-w * 0.7, -h * 0.55, w * 1.4, h);
+    }
+    if (t.flash > 0) {
+      ctx.fillStyle = `rgba(255,255,255,${0.4 * t.flash})`;
+      ctx.fillRect(-w * 0.7, -h * 0.55, w * 1.4, h);
+    }
     ctx.restore();
   }
 
@@ -804,39 +839,82 @@
     ctx.save();
     ctx.translate(t.x, t.y);
     ctx.rotate(t.rot);
+    ctx.beginPath();
+    ctx.arc(3, 5, t.r * 0.95, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0,0,0,0.14)";
+    ctx.fill();
+
     if (t.fruit === "banana") {
+      ctx.lineCap = "round";
+      ctx.strokeStyle = t.accent;
+      ctx.lineWidth = t.r * 0.72;
+      ctx.beginPath();
+      ctx.arc(0, 0, t.r * 0.7, 0.15 * Math.PI, 1.15 * Math.PI);
+      ctx.stroke();
       ctx.strokeStyle = t.color;
       ctx.lineWidth = t.r * 0.55;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.arc(0, 0, t.r * 0.7, 0.2 * Math.PI, 1.1 * Math.PI);
       ctx.stroke();
-    } else if (t.fruit === "grape") {
-      for (let i = 0; i < 6; i++) {
-        const a = (i / 6) * Math.PI * 2;
-        ctx.fillStyle = t.color;
-        ctx.beginPath();
-        ctx.arc(Math.cos(a) * t.r * 0.45, Math.sin(a) * t.r * 0.45, t.r * 0.38, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.fillStyle = t.color;
-      ctx.beginPath();
-      ctx.arc(0, 0, t.r * 0.35, 0, Math.PI * 2);
-      ctx.fill();
-    } else {
-      const g = ctx.createRadialGradient(-t.r * 0.3, -t.r * 0.3, 2, 0, 0, t.r);
-      g.addColorStop(0, "#fff8");
-      g.addColorStop(0.35, t.color);
-      g.addColorStop(1, t.color);
+      ctx.strokeStyle = "rgba(255,255,255,0.45)";
+      ctx.lineWidth = t.r * 0.12;
+      ctx.stroke();
+    } else if (t.fruit === "watermelon") {
+      const g = ctx.createRadialGradient(-t.r * 0.2, -t.r * 0.2, 4, 0, 0, t.r);
+      g.addColorStop(0, "#6fd18a");
+      g.addColorStop(0.55, t.color);
+      g.addColorStop(1, "#1f6b38");
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(0, 0, t.r, 0, Math.PI * 2);
       ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.25)";
+      ctx.lineWidth = 3;
+      for (let i = -2; i <= 2; i++) {
+        ctx.beginPath();
+        ctx.arc(0, 0, t.r * 0.75, -0.4 + i * 0.15, 0.4 + i * 0.15);
+        ctx.stroke();
+      }
+      ctx.fillStyle = t.accent;
+      ctx.beginPath();
+      ctx.moveTo(-t.r, 0);
+      ctx.arc(0, 0, t.r, Math.PI * 0.15, Math.PI * 0.85);
+      ctx.closePath();
+      ctx.globalAlpha = 0.85;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    } else {
+      const g = ctx.createRadialGradient(-t.r * 0.35, -t.r * 0.35, 3, 0, 0, t.r);
+      g.addColorStop(0, "#fff8");
+      g.addColorStop(0.25, t.color);
+      g.addColorStop(1, t.accent);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, 0, t.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.12)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
       if (t.leaf) {
         ctx.fillStyle = t.leaf;
         ctx.beginPath();
-        ctx.ellipse(t.r * 0.15, -t.r * 0.85, t.r * 0.35, t.r * 0.18, -0.5, 0, Math.PI * 2);
+        ctx.ellipse(t.r * 0.1, -t.r * 0.9, t.r * 0.38, t.r * 0.18, -0.6, 0, Math.PI * 2);
         ctx.fill();
+        ctx.strokeStyle = "#2d5c28";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, -t.r * 0.75);
+        ctx.lineTo(0, -t.r * 1.05);
+        ctx.stroke();
+      }
+      if (t.fruit === "orange") {
+        ctx.strokeStyle = "rgba(255,255,255,0.25)";
+        ctx.lineWidth = 1.5;
+        for (let i = 0; i < 5; i++) {
+          const a = (i / 5) * Math.PI * 2;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(Math.cos(a) * t.r * 0.85, Math.sin(a) * t.r * 0.85);
+          ctx.stroke();
+        }
       }
     }
     ctx.restore();
@@ -844,71 +922,137 @@
 
   function drawSaucer(ctx, t, boss) {
     ctx.save();
+    const scale = boss && t.teleportIn > 0 ? 0.65 + (1 - t.teleportIn) * 0.35 : 1;
     ctx.translate(t.x, t.y);
+    ctx.scale(scale, scale);
     const R = t.r;
+
     if (t.beam || boss) {
-      const bg = ctx.createLinearGradient(0, 0, 0, R * (boss ? 5 : 4));
-      bg.addColorStop(0, "rgba(120,220,160,0.35)");
-      bg.addColorStop(1, "rgba(120,220,160,0)");
+      const bg = ctx.createLinearGradient(0, 0, 0, R * (boss ? 5.5 : 3.8));
+      bg.addColorStop(0, boss ? "rgba(180,120,255,0.4)" : "rgba(100,230,170,0.35)");
+      bg.addColorStop(1, "rgba(100,230,170,0)");
       ctx.fillStyle = bg;
       ctx.beginPath();
-      ctx.moveTo(-R * 0.4, R * 0.2);
-      ctx.lineTo(R * 0.4, R * 0.2);
-      ctx.lineTo(R * (boss ? 1.6 : 1.2), R * (boss ? 5 : 4));
-      ctx.lineTo(-R * (boss ? 1.6 : 1.2), R * (boss ? 5 : 4));
+      ctx.moveTo(-R * 0.35, R * 0.25);
+      ctx.lineTo(R * 0.35, R * 0.25);
+      ctx.lineTo(R * (boss ? 1.7 : 1.15), R * (boss ? 5.5 : 3.8));
+      ctx.lineTo(-R * (boss ? 1.7 : 1.15), R * (boss ? 5.5 : 3.8));
       ctx.fill();
     }
-    if (t.flash > 0) {
-      ctx.fillStyle = `rgba(255,255,255,${0.35 * t.flash})`;
-      ctx.beginPath();
-      ctx.ellipse(0, R * 0.1, R * 1.1, R * 0.45, 0, 0, Math.PI * 2);
-      ctx.fill();
+
+    // shadow
+    ctx.fillStyle = "rgba(0,0,0,0.16)";
+    ctx.beginPath();
+    ctx.ellipse(0, R * 0.55, R * 0.85, R * 0.18, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // dome
+    const dome = ctx.createRadialGradient(-R * 0.2, -R * 0.45, 2, 0, -R * 0.1, R * 0.55);
+    dome.addColorStop(0, "#fff");
+    dome.addColorStop(0.35, boss ? "#d7b8ff" : t.gold ? "#fff0b0" : "#bfe9ff");
+    dome.addColorStop(1, boss ? "#6b3fa0" : t.gold ? "#c9a016" : "#4f7f9a");
+    ctx.fillStyle = dome;
+    ctx.beginPath();
+    ctx.ellipse(0, -R * 0.12, R * 0.48, R * 0.42, 0, Math.PI, 0);
+    ctx.fill();
+
+    // rim / body
+    const body = ctx.createLinearGradient(-R, 0, R, 0);
+    if (boss) {
+      body.addColorStop(0, "#3a2458");
+      body.addColorStop(0.35, "#cbb0ef");
+      body.addColorStop(0.5, "#f3e9ff");
+      body.addColorStop(0.65, "#cbb0ef");
+      body.addColorStop(1, "#3a2458");
+    } else if (t.gold) {
+      body.addColorStop(0, "#8a6a10");
+      body.addColorStop(0.5, "#ffe08a");
+      body.addColorStop(1, "#8a6a10");
+    } else {
+      body.addColorStop(0, "#5a6b78");
+      body.addColorStop(0.5, "#e2e8ee");
+      body.addColorStop(1, "#5a6b78");
     }
-    ctx.fillStyle = "rgba(180, 230, 255, 0.85)";
+    ctx.fillStyle = body;
     ctx.beginPath();
-    ctx.ellipse(0, -R * 0.15, R * 0.45, R * 0.4, 0, Math.PI, 0);
+    ctx.ellipse(0, R * 0.12, R * 1.05, R * 0.34, 0, 0, Math.PI * 2);
     ctx.fill();
-    const g = ctx.createLinearGradient(-R, 0, R, 0);
-    g.addColorStop(0, boss ? "#5a3d7a" : "#6a7d8c");
-    g.addColorStop(0.5, boss ? "#d7c2ef" : "#d5dde4");
-    g.addColorStop(1, boss ? "#5a3d7a" : "#6a7d8c");
-    ctx.fillStyle = g;
+    ctx.strokeStyle = "rgba(0,0,0,0.18)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // cabin window
+    ctx.fillStyle = boss ? "rgba(255,200,120,0.9)" : "rgba(255,255,255,0.55)";
     ctx.beginPath();
-    ctx.ellipse(0, R * 0.1, R, R * 0.35, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, -R * 0.22, R * 0.18, R * 0.14, 0, 0, Math.PI * 2);
     ctx.fill();
-    ["#e85d5d", "#f0c14a", "#3cc0ec"].forEach((c, i) => {
+
+    const lights = boss
+      ? ["#ff5b5b", "#ffd15a", "#6ee4ff", "#c084fc", "#ff5b5b"]
+      : ["#ff5b5b", "#ffd15a", "#5ec8ff"];
+    lights.forEach((c, i) => {
+      const a = -0.9 + (i / (lights.length - 1)) * 1.8;
       ctx.fillStyle = c;
       ctx.beginPath();
-      ctx.arc(-R * 0.45 + i * R * 0.45, R * 0.18, boss ? 5 : 3.5, 0, Math.PI * 2);
+      ctx.arc(Math.sin(a) * R * 0.72, R * 0.22 + Math.cos(a) * 2, boss ? 5 : 3.6, 0, Math.PI * 2);
       ctx.fill();
     });
+
+    if (boss) {
+      ctx.strokeStyle = "rgba(255,255,255,0.35)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(0, R * 0.12, R * 0.7, R * 0.18, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,0.8)";
+      ctx.font = `bold ${Math.floor(R * 0.22)}px SpaceGrotesk, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText("MOTHERSHIP", 0, R * 0.18);
+    }
+
+    if (t.flash > 0) {
+      ctx.fillStyle = `rgba(255,255,255,${0.45 * t.flash})`;
+      ctx.beginPath();
+      ctx.ellipse(0, R * 0.1, R * 1.1, R * 0.42, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.restore();
   }
 
-  function drawDuck(ctx, t) {
+  function drawMeteor(ctx, t) {
     ctx.save();
+    for (const p of t.trail) {
+      ctx.globalAlpha = p.life * 0.55;
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, t.r * 1.4);
+      g.addColorStop(0, "#ffe29a");
+      g.addColorStop(0.4, "#ff7a3d");
+      g.addColorStop(1, "rgba(255,80,20,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, t.r * (0.5 + p.life * 0.6), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
     ctx.translate(t.x, t.y);
-    ctx.scale(t.facing, 1);
-    ctx.fillStyle = "#e8a03a";
+    ctx.rotate(t.rot);
+    const rock = ctx.createRadialGradient(-4, -4, 1, 0, 0, t.r);
+    rock.addColorStop(0, "#f0d2a0");
+    rock.addColorStop(0.45, "#b56a3a");
+    rock.addColorStop(1, "#4a2a18");
+    ctx.fillStyle = rock;
     ctx.beginPath();
-    ctx.ellipse(0, 0, 18, 12, 0, 0, Math.PI * 2);
+    ctx.moveTo(-t.r, 0);
+    ctx.lineTo(-t.r * 0.3, -t.r * 0.85);
+    ctx.lineTo(t.r * 0.55, -t.r * 0.55);
+    ctx.lineTo(t.r, t.r * 0.15);
+    ctx.lineTo(t.r * 0.2, t.r * 0.85);
+    ctx.lineTo(-t.r * 0.55, t.r * 0.45);
+    ctx.closePath();
     ctx.fill();
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
     ctx.beginPath();
-    ctx.arc(12, -8, 8, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#2c2c2c";
-    ctx.beginPath();
-    ctx.arc(15, -10, 1.8, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#e85d5d";
-    ctx.beginPath();
-    ctx.moveTo(18, -8);
-    ctx.lineTo(28, -6);
-    ctx.lineTo(18, -3);
-    ctx.fill();
-    ctx.fillStyle = "#d4920f";
-    ctx.beginPath();
-    ctx.ellipse(-6, -2, 8, 5, -0.4, 0, Math.PI * 2);
+    ctx.arc(-t.r * 0.2, 0, t.r * 0.22, 0, Math.PI * 2);
+    ctx.arc(t.r * 0.25, t.r * 0.15, t.r * 0.16, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
@@ -916,11 +1060,11 @@
   function drawTarget(ctx, t) {
     if (t.type === "balloon") drawBalloon(ctx, t);
     else if (t.type === "target") drawBullseye(ctx, t);
-    else if (t.type === "disk") drawDisk(ctx, t);
+    else if (t.type === "can") drawCan(ctx, t);
     else if (t.type === "fruit") drawFruit(ctx, t);
     else if (t.type === "saucer") drawSaucer(ctx, t, false);
     else if (t.type === "boss") drawSaucer(ctx, t, true);
-    else if (t.type === "duck") drawDuck(ctx, t);
+    else if (t.type === "meteor") drawMeteor(ctx, t);
   }
 
   function drawFx(ctx) {
@@ -937,7 +1081,7 @@
         ctx.beginPath();
         ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
         ctx.stroke();
-        ctx.strokeStyle = "rgba(255,255,255,0.7)";
+        ctx.strokeStyle = "rgba(255,255,255,0.75)";
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(f.x, f.y, f.r * 0.55, 0, Math.PI * 2);
@@ -1054,9 +1198,7 @@
       setAiming(false);
       return;
     }
-    const overUi = e?.target?.closest?.(
-      "[data-zap-start], [data-zap-mute], .zap-overlay:not([hidden])"
-    );
+    const overUi = e?.target?.closest?.("[data-zap-start], .zap-overlay:not([hidden])");
     setAiming(state.mode === "playing" && !overUi);
   }
 
@@ -1071,7 +1213,7 @@
 
   function onPointerDown(e) {
     if (!state.active) return;
-    if (e.target.closest?.("[data-zap-start], [data-zap-mute]")) return;
+    if (e.target.closest?.("[data-zap-start]")) return;
     if (state.mode === "idle" || state.mode === "dead") {
       startGame();
       return;
@@ -1093,10 +1235,9 @@
     setOverlay(true, {
       kicker: "Arcade",
       title: "Zap Gallery",
-      hint: "2-minute score attack. Progressive waves, then a boss click fight.",
+      hint: "Skill run: sparse targets, combo multipliers, then a teleporting boss.",
       cta: "Play",
     });
-    updateMuteBtn();
     updateHud();
     resize();
     requestAnimationFrame(() => {
@@ -1107,7 +1248,6 @@
     state.raf = requestAnimationFrame(loop);
     document.body.classList.add("zap-active");
     setAiming(false);
-    syncAudio();
   }
 
   function deactivate() {
@@ -1121,14 +1261,10 @@
     state.boss = null;
     document.body.classList.remove("zap-active");
     setAiming(false);
-    if (state.audio) {
-      state.audio.pause();
-      state.audio.currentTime = 0;
-    }
     setOverlay(true, {
       kicker: "Arcade",
       title: "Zap Gallery",
-      hint: "2-minute score attack. Progressive waves, then a boss click fight.",
+      hint: "Skill run: sparse targets, combo multipliers, then a teleporting boss.",
       cta: "Play",
     });
   }
@@ -1140,14 +1276,11 @@
 
     state.canvas = canvas;
     state.ctx = canvas.getContext("2d");
-    state.muted = loadMuted();
     state.els = {
       score: document.querySelector("[data-zap-score]"),
       best: document.querySelector("[data-zap-best]"),
       combo: document.querySelector("[data-zap-combo]"),
       wave: document.querySelector("[data-zap-wave]"),
-      time: document.querySelector("[data-zap-time]"),
-      bar: document.querySelector("[data-zap-bar]"),
       bossWrap: document.querySelector("[data-zap-boss]"),
       bossFill: document.querySelector("[data-zap-boss-fill]"),
       overlay: document.querySelector("[data-zap-overlay]"),
@@ -1155,22 +1288,15 @@
       title: document.querySelector("[data-zap-title]"),
       hint: document.querySelector("[data-zap-hint]"),
       start: document.querySelector("[data-zap-start]"),
-      mute: document.querySelector("[data-zap-mute]"),
     };
 
     state.best = loadBest();
-    updateMuteBtn();
     updateHud();
     setOverlay(true);
 
     state.els.start?.addEventListener("click", (e) => {
       e.stopPropagation();
       startGame();
-    });
-
-    state.els.mute?.addEventListener("click", (e) => {
-      e.stopPropagation();
-      setMuted(!state.muted);
     });
 
     canvas.addEventListener("pointerdown", onPointerDown);

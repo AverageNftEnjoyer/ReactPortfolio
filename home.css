@@ -1,4 +1,4 @@
-/* fonts */
+﻿/* fonts */
 @font-face {
   font-family: "SpaceGrotesk";
   src: url("assets/fonts/SpaceGrotesk-Bold.ttf");
@@ -1210,7 +1210,7 @@ button.card {
 .card-content.card-arcade {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(180deg, #7eb6d9 0%, #c5dcb0 70%, #a8c484 100%);
+  background: linear-gradient(180deg, #6aa9d4 0%, #c5dcb0 68%, #9db87a 100%);
 }
 .card-content.card-arcade .card-reveal {
   position: relative;
@@ -1223,50 +1223,108 @@ button.card {
 }
 .card-arcade-balloon {
   position: absolute;
-  width: 1.35rem;
-  height: 1.7rem;
+  left: 12%;
+  bottom: 30%;
+  width: 1.2rem;
+  height: 1.55rem;
   border-radius: 50%;
+  background: radial-gradient(circle at 30% 28%, #fff 0 18%, #e44747 22%);
   animation: arcade-float 2.4s ease-in-out infinite;
 }
 .card-arcade-balloon::after {
   content: "";
   position: absolute;
   left: 50%;
-  bottom: -0.55rem;
+  bottom: -0.5rem;
   width: 1px;
-  height: 0.55rem;
+  height: 0.5rem;
   background: rgba(30, 40, 50, 0.35);
   transform: translateX(-50%);
 }
-.card-arcade-balloon.b1 {
-  left: 18%;
-  bottom: 28%;
-  background: #e85d5d;
-  animation-delay: 0s;
-}
-.card-arcade-balloon.b2 {
-  left: 42%;
-  bottom: 38%;
-  background: #3cc0ec;
-  animation-delay: 0.4s;
-}
-.card-arcade-balloon.b3 {
-  right: 22%;
-  bottom: 24%;
-  background: #f0c14a;
-  animation-delay: 0.8s;
-}
 .card-arcade-target {
   position: absolute;
-  right: 18%;
-  top: 18%;
-  width: 2.4rem;
-  height: 2.4rem;
+  left: 36%;
+  top: 16%;
+  width: 2rem;
+  height: 2rem;
   border-radius: 50%;
   background:
-    radial-gradient(circle, #e85d5d 0 18%, #f5f5f5 18% 36%, #2c2c2c 36% 54%, #f5f5f5 54% 72%, #2c2c2c 72%);
+    radial-gradient(circle, #e44747 0 16%, #f5f5f5 16% 34%, #1f1f1f 34% 52%, #f5f5f5 52% 70%, #1f1f1f 70%);
   box-shadow: 0 2px 6px rgba(1, 3, 19, 0.18);
   animation: arcade-pulse 2s ease-in-out infinite;
+}
+.card-arcade-ufo {
+  position: absolute;
+  right: 14%;
+  top: 22%;
+  width: 2.4rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #d9e2ea, #6a7d8c);
+  box-shadow: 0 4px 8px rgba(1, 3, 19, 0.18);
+  animation: arcade-float 2.8s ease-in-out infinite 0.2s;
+}
+.card-arcade-ufo::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -0.45rem;
+  width: 1rem;
+  height: 0.7rem;
+  border-radius: 50% 50% 40% 40%;
+  background: radial-gradient(circle at 40% 40%, #fff, #9fd4ef);
+  transform: translateX(-50%);
+}
+.card-arcade-ufo::after {
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 0.18rem;
+  height: 0.22rem;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #e44747, #f0c14a, #3cc0ec);
+}
+.card-arcade-fruit {
+  position: absolute;
+  right: 28%;
+  bottom: 22%;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 28%, #fff6 0 20%, #e23b3b 24%, #8f1f1f 100%);
+  animation: arcade-float 2.2s ease-in-out infinite 0.5s;
+}
+.card-arcade-fruit::before {
+  content: "";
+  position: absolute;
+  top: -0.2rem;
+  right: 0.25rem;
+  width: 0.45rem;
+  height: 0.25rem;
+  border-radius: 50%;
+  background: #3f8f3a;
+  transform: rotate(-25deg);
+}
+.card-arcade-can {
+  position: absolute;
+  left: 54%;
+  bottom: 18%;
+  width: 0.95rem;
+  height: 1.35rem;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #8a8f94, #f4f6f8 45%, #7e848a);
+  box-shadow: 0 2px 5px rgba(1, 3, 19, 0.16);
+  animation: arcade-pulse 2.4s ease-in-out infinite 0.3s;
+}
+.card-arcade-can::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 38%;
+  height: 28%;
+  background: #c45c3e;
 }
 @keyframes arcade-float {
   0%,
@@ -1286,7 +1344,9 @@ button.card {
     transform: scale(1.06);
   }
 }
-.card:hover .card-arcade-balloon {
+.card:hover .card-arcade-balloon,
+.card:hover .card-arcade-ufo,
+.card:hover .card-arcade-fruit {
   animation-duration: 1.2s;
 }
 
@@ -1319,7 +1379,6 @@ button.card {
   cursor: none;
   background: #7eb6d9;
 }
-.zap-shell .zap-mute,
 .zap-shell .pill-btn,
 .zap-shell .zap-overlay {
   cursor: pointer;
@@ -1332,23 +1391,6 @@ button.card {
   width: 100%;
   height: 100%;
   touch-action: none;
-}
-.zap-progress {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  z-index: 5;
-  background: rgba(1, 3, 19, 0.12);
-  pointer-events: none;
-}
-.zap-progress-fill {
-  height: 100%;
-  width: 100%;
-  transform-origin: left center;
-  transform: scaleX(0);
-  background: linear-gradient(90deg, #3cc0ec, #f0c14a 70%, #e85d5d);
 }
 .zap-hud {
   position: absolute;
@@ -1378,12 +1420,6 @@ button.card {
   align-items: flex-end;
   gap: 8px;
 }
-.zap-brand-row {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  pointer-events: auto;
-}
 .zap-brand {
   margin: 0;
   font-family: "SpaceGrotesk", sans-serif;
@@ -1392,52 +1428,10 @@ button.card {
   color: #fff;
   text-shadow: 0 1px 0 rgba(1, 3, 19, 0.3), 0 2px 10px rgba(1, 3, 19, 0.25);
 }
-.zap-mute {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 9999px;
-  border: 1.5px solid rgba(255, 255, 255, 0.55);
-  background: rgba(1, 3, 19, 0.28);
-  color: #fff;
-  font-family: "SpaceGrotesk", sans-serif;
-  font-size: 0.78rem;
-  font-weight: 600;
-  backdrop-filter: blur(4px);
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-.zap-mute:hover {
-  background: rgba(1, 3, 19, 0.42);
-  border-color: rgba(255, 255, 255, 0.85);
-}
-.zap-mute-icon {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-  background: #3cc0ec;
-  box-shadow: 4px 0 0 #3cc0ec;
-  position: relative;
-}
-.zap-mute.is-muted .zap-mute-icon {
-  background: rgba(255, 255, 255, 0.45);
-  box-shadow: 4px 0 0 rgba(255, 255, 255, 0.45);
-}
-.zap-mute.is-muted .zap-mute-icon::after {
-  content: "";
-  position: absolute;
-  left: -2px;
-  top: 5px;
-  width: 18px;
-  height: 2px;
-  background: #e85d5d;
-  transform: rotate(-45deg);
-}
 .zap-score,
 .zap-best,
 .zap-wave,
-.zap-combo,
-.zap-time {
+.zap-combo {
   margin: 0;
   font-family: "SpaceGrotesk", sans-serif;
   color: #fff;
@@ -1467,12 +1461,6 @@ button.card {
   font-size: 1rem;
   font-weight: 700;
   color: #f0c14a;
-}
-.zap-time {
-  font-size: clamp(1.4rem, 3vw, 1.85rem);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
 }
 .zap-boss {
   width: min(180px, 42vw);
@@ -1569,7 +1557,6 @@ button.card {
   transform: translateY(0);
 }
 
-/* hide trail + system cursor only while aiming in the game field */
 body.zap-aiming .trail-cursor {
   display: none !important;
 }
@@ -1591,7 +1578,5 @@ body.zap-aiming .zap-shell {
     padding: 12px 14px;
     gap: 8px;
   }
-  .zap-brand-row {
-    gap: 6px;
-  }
 }
+

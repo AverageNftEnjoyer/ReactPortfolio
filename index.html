@@ -86,14 +86,15 @@
             <button class="card channel-shadow channel-btn" type="button" data-channel="arcade" aria-label="Open Arcade">
               <div class="card-content card-arcade">
                 <div class="card-arcade-scene" aria-hidden="true">
-                  <span class="card-arcade-balloon b1"></span>
-                  <span class="card-arcade-balloon b2"></span>
-                  <span class="card-arcade-balloon b3"></span>
+                  <span class="card-arcade-balloon"></span>
                   <span class="card-arcade-target"></span>
+                  <span class="card-arcade-ufo"></span>
+                  <span class="card-arcade-fruit"></span>
+                  <span class="card-arcade-can"></span>
                 </div>
                 <div class="card-reveal">
                   <span class="card-title">Arcade</span>
-                  <span class="card-subtitle">Quick Break</span>
+                  <span class="card-subtitle">Zap Gallery</span>
                 </div>
               </div>
             </button>
@@ -178,27 +179,17 @@
                 <section class="channel-view channel-view-arcade" data-view="arcade" hidden>
                   <div class="zap-shell">
                     <canvas id="zap-canvas" aria-label="Zap Gallery game"></canvas>
-                    <div class="zap-progress" aria-hidden="true">
-                      <div class="zap-progress-fill" data-zap-bar></div>
-                    </div>
                     <div class="zap-hud">
                       <div class="zap-hud-left">
                         <p class="zap-score" data-zap-score>0</p>
                         <p class="zap-best" data-zap-best>Best 0</p>
                       </div>
                       <div class="zap-hud-center">
-                        <div class="zap-brand-row">
-                          <p class="zap-brand">Zap Gallery</p>
-                          <button class="zap-mute" type="button" data-zap-mute aria-pressed="true" aria-label="Unmute music">
-                            <span class="zap-mute-icon" aria-hidden="true"></span>
-                            <span data-zap-mute-label>Muted</span>
-                          </button>
-                        </div>
+                        <p class="zap-brand">Zap Gallery</p>
                         <p class="zap-wave" data-zap-wave>Balloons</p>
                         <p class="zap-combo" data-zap-combo hidden>0 hit combo</p>
                       </div>
                       <div class="zap-hud-right">
-                        <p class="zap-time" data-zap-time>2:00</p>
                         <div class="zap-boss" data-zap-boss hidden>
                           <span class="zap-boss-label">Boss</span>
                           <div class="zap-boss-track">
@@ -210,7 +201,7 @@
                     <div class="zap-overlay" data-zap-overlay>
                       <p class="zap-overlay-kicker" data-zap-kicker>Arcade</p>
                       <h3 class="zap-overlay-title" data-zap-title>Zap Gallery</h3>
-                      <p class="zap-overlay-hint" data-zap-hint>2-minute score attack. Progressive waves, then a boss click fight.</p>
+                      <p class="zap-overlay-hint" data-zap-hint>Skill run: sparse targets, combo multipliers, then a teleporting boss.</p>
                       <button class="pill-btn zap-start" type="button" data-zap-start>Play</button>
                     </div>
                   </div>
