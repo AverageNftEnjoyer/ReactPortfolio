@@ -1,0 +1,50 @@
+- generic [ref=e2]:
+  - main [ref=e3]:
+    - generic [ref=e5]:
+      - button "Open About Me" [ref=e6]:
+        - generic [ref=e7]:
+          - img "Disc" [ref=e8]
+          - paragraph [ref=e9]: About Me
+      - button "Open Work Experience" [ref=e10]:
+        - generic [ref=e12]:
+          - generic [ref=e13]: Work Experience
+          - generic [ref=e14]: My Career Path
+      - button "Open Certifications" [ref=e15]:
+        - generic [ref=e16]:
+          - paragraph [ref=e17]: Certifications
+          - paragraph [ref=e18]: My Credentials
+      - link "Open GitHub" [ref=e19]:
+        - /url: https://github.com/AverageNftEnjoyer
+        - generic [ref=e20]:
+          - paragraph [ref=e21]: Github
+          - paragraph [ref=e22]: My Code
+      - link "Open LinkedIn" [ref=e23]:
+        - /url: https://www.linkedin.com/in/jack-pastor-816157223/
+        - generic [ref=e24]:
+          - paragraph [ref=e25]: Linkedin
+          - paragraph [ref=e26]: Let's Connect
+      - link "Open Resume" [ref=e27]:
+        - /url: assets/JackPastorResume.pdf
+        - generic [ref=e28]:
+          - paragraph [ref=e29]: Resume
+          - paragraph [ref=e30]: View Resume
+      - link "Open QueryLens" [ref=e31]:
+        - /url: https://querycompanion.vercel.app/
+        - generic [ref=e32]:
+          - paragraph [ref=e33]: QueryLens
+          - paragraph [ref=e34]: SQL Companion Tool
+      - generic [ref=e36]:
+        - paragraph [ref=e37]: Nova.AIO
+        - paragraph [ref=e38]: Multi-Agent Framework
+      - button "Open Arcade" [ref=e39]:
+        - generic [ref=e41]:
+          - generic [ref=e42]: Arcade
+          - generic [ref=e43]: Zap Gallery
+      - paragraph [ref=e46]: Coming Soon
+      - paragraph [ref=e49]: Coming Soon
+      - paragraph [ref=e52]: Coming Soon
+  - generic [ref=e53]:
+    - button "Home" [ref=e54]
+    - button "Next" [ref=e56]
+    - paragraph [ref=e61]: Jack Pastor
+    - paragraph [ref=e64]: Not Affiliated with Nintendo

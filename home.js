@@ -4,13 +4,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const container = document.querySelector(".card-grid");
+  const desktopGrid = window.matchMedia("(min-width: 768px)");
   container?.addEventListener(
     "wheel",
     (e) => {
-      if (e.deltaY) {
-        e.preventDefault();
-        container.scrollLeft += e.deltaY * 0.4;
-      }
+      if (!desktopGrid.matches || !e.deltaY) return;
+      e.preventDefault();
+      container.scrollLeft += e.deltaY * 0.4;
     },
     { passive: false }
   );

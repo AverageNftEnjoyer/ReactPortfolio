@@ -1,0 +1,50 @@
+- generic [ref=f2e2]:
+  - main [ref=f2e3]:
+    - generic [ref=f2e5]:
+      - button "Open About Me" [ref=f2e6]:
+        - generic [ref=f2e7]:
+          - img "Disc" [ref=f2e8]
+          - paragraph [ref=f2e9]: About Me
+      - button "Open Work Experience" [ref=f2e10]:
+        - generic [ref=f2e12]:
+          - generic [ref=f2e13]: Work Experience
+          - generic [ref=f2e14]: My Career Path
+      - button "Open Certifications" [ref=f2e15]:
+        - generic [ref=f2e16]:
+          - paragraph [ref=f2e17]: Certifications
+          - paragraph [ref=f2e18]: My Credentials
+      - link "Open GitHub" [ref=f2e19]:
+        - /url: https://github.com/AverageNftEnjoyer
+        - generic [ref=f2e20]:
+          - paragraph [ref=f2e21]: Github
+          - paragraph [ref=f2e22]: My Code
+      - link "Open LinkedIn" [ref=f2e23]:
+        - /url: https://www.linkedin.com/in/jack-pastor-816157223/
+        - generic [ref=f2e24]:
+          - paragraph [ref=f2e25]: Linkedin
+          - paragraph [ref=f2e26]: Let's Connect
+      - link "Open Resume" [ref=f2e27]:
+        - /url: assets/JackPastorResume.pdf
+        - generic [ref=f2e28]:
+          - paragraph [ref=f2e29]: Resume
+          - paragraph [ref=f2e30]: View Resume
+      - link "Open QueryLens" [ref=f2e31]:
+        - /url: https://querycompanion.vercel.app/
+        - generic [ref=f2e32]:
+          - paragraph [ref=f2e33]: QueryLens
+          - paragraph [ref=f2e34]: SQL Companion Tool
+      - generic [ref=f2e36]:
+        - paragraph [ref=f2e37]: Nova.AIO
+        - paragraph [ref=f2e38]: Multi-Agent Framework
+      - button "Open Arcade" [ref=f2e39]:
+        - generic [ref=f2e41]:
+          - generic [ref=f2e42]: Arcade
+          - generic [ref=f2e43]: Zap Gallery
+      - paragraph [ref=f2e46]: Coming Soon
+      - paragraph [ref=f2e49]: Coming Soon
+      - paragraph [ref=f2e52]: Coming Soon
+  - generic [ref=f2e53]:
+    - button "Home" [ref=f2e54]
+    - button "Next" [ref=f2e56]
+    - paragraph [ref=f2e61]: Jack Pastor
+    - paragraph [ref=f2e64]: Not Affiliated with Nintendo

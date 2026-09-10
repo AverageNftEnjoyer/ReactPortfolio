@@ -751,6 +751,44 @@ img {
   transform: translateY(0);
 }
 
+/* nova card — same type scale as github / credentials */
+.card-content.card-nova {
+  position: relative;
+  height: 100%;
+  background-color: #010313;
+}
+.card-nova-label {
+  position: absolute;
+  z-index: 1;
+  bottom: 1rem;
+  left: 22px;
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  transition: transform 200ms ease;
+}
+.card:hover .card-nova-label {
+  transform: translateY(-0.85rem);
+}
+.card-nova-sub {
+  position: absolute;
+  z-index: 1;
+  bottom: 1rem;
+  left: 22px;
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+.card:hover .card-nova-sub {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* placeholders */
 .card-placeholder-label {
   margin: auto;
@@ -990,9 +1028,11 @@ button.card {
 }
 .dock-disclaimer {
   margin-top: 2px;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 500;
   color: rgba(1, 3, 19, 0.35);
+  text-align: center;
+  line-height: 1.2;
 }
 
 @media (min-width: 640px) {
@@ -1014,7 +1054,7 @@ button.card {
     font-size: 1.4rem;
   }
   .dock-disclaimer {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
   }
 }
 
@@ -1423,16 +1463,6 @@ button.card {
   clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%);
   opacity: 0.85;
 }
-.card-arcade-meteor {
-  position: absolute;
-  z-index: 3;
-  width: 22%;
-  height: 4%;
-  border-radius: 9999px;
-  background: linear-gradient(90deg, transparent, #ffb347 35%, #fff6d0 70%, #f4e8c8 100%);
-  box-shadow: 0 0 10px 2px rgba(255, 170, 70, 0.45);
-  animation: arcade-meteor-fly 18s linear infinite;
-}
 .card-arcade-spark {
   position: absolute;
   left: 44%;
@@ -1506,31 +1536,6 @@ button.card {
     left: 118%;
     transform: translateY(4px);
     opacity: 0;
-  }
-}
-@keyframes arcade-meteor-fly {
-  0%,
-  46% {
-    left: -28%;
-    top: 10%;
-    opacity: 0;
-    transform: rotate(-22deg);
-  }
-  52% {
-    opacity: 1;
-  }
-  72% {
-    left: 108%;
-    top: 46%;
-    opacity: 1;
-    transform: rotate(-22deg);
-  }
-  76%,
-  100% {
-    left: 118%;
-    top: 52%;
-    opacity: 0;
-    transform: rotate(-22deg);
   }
 }
 @keyframes arcade-spark {
@@ -1775,6 +1780,115 @@ body.zap-aiming .zap-shell {
   cursor: none;
 }
 
+@media (max-width: 767px) {
+  .home-main {
+    --dock-space: 120px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+
+  .grid-shell {
+    justify-content: flex-start;
+    align-items: stretch;
+    margin: 0;
+    flex: none;
+    width: 100%;
+    min-height: auto;
+  }
+
+  .card-grid {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 28rem;
+    margin: 0 auto;
+    gap: 0.85rem;
+    padding: 1rem 1rem 1.25rem;
+  }
+
+  .card {
+    width: 100%;
+    flex-shrink: 0;
+  }
+
+  .fade-in-right {
+    transform: none;
+    animation: fadeInBottom 0.7s forwards;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+
+  .card-reveal .card-title,
+  .card-reveal img {
+    transform: none;
+  }
+  .card-reveal .card-subtitle {
+    opacity: 1;
+    transform: none;
+  }
+
+  .card-github-label,
+  .card-linkedin-label,
+  .card-resume-label,
+  .card-certs-label,
+  .card-querylens-label,
+  .card-nova-label {
+    transform: translateY(-0.85rem);
+  }
+  .card-github-sub,
+  .card-linkedin-sub,
+  .card-resume-sub,
+  .card-certs-sub,
+  .card-querylens-sub,
+  .card-nova-sub {
+    opacity: 1;
+    transform: none;
+  }
+
+  .dock-fill {
+    height: 48px;
+  }
+  .dock-notch {
+    width: 70px;
+    height: 48px;
+  }
+  .dock-label-wrap {
+    min-width: 0;
+    flex: 1 1 auto;
+    height: 48px;
+  }
+  .dock-bar .dock-label {
+    transform: translateY(8px);
+    font-size: 0.95rem;
+    padding: 0 6px;
+  }
+  .dock-base {
+    padding: 6px 0 14px;
+  }
+  .dock-corner-btn {
+    min-width: 86px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    bottom: 14px;
+    left: 10px;
+  }
+  .dock-corner-btn.right {
+    left: auto;
+    right: 10px;
+  }
+  .dock-label {
+    font-size: 1rem;
+  }
+  .dock-disclaimer {
+    font-size: 0.58rem;
+    padding: 0 88px;
+  }
+}
+
 @media (max-width: 639px) {
   .channel-popup-header {
     padding: 20px 18px 0;
@@ -1788,6 +1902,16 @@ body.zap-aiming .zap-shell {
   .zap-hud {
     padding: 12px 14px;
     gap: 8px;
+  }
+  .zap-overlay {
+    padding: 16px;
+  }
+  .zap-overlay-card {
+    padding: 16px 18px 18px;
+    border-radius: 18px;
+  }
+  .zap-overlay-hint {
+    font-size: 0.92rem;
   }
 }
 

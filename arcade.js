@@ -69,6 +69,9 @@
   const rand = (a, b) => a + Math.random() * (b - a);
   const pick = (arr) => arr[(Math.random() * arr.length) | 0];
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const randIn = (a, b, fallback) => (b > a ? rand(a, b) : fallback);
+  const fieldX = () => clamp(state.w / 900, 0.62, 1.2);
+  const fieldY = () => clamp(state.h / 640, 0.62, 1.2);
 
   function phaseAt(t) {
     if (state.forceBoss || state.boss) return PHASES[PHASES.length - 1];
@@ -270,16 +273,18 @@
     if (countType("balloon") >= CAPS.balloon) return;
     const colors = ["#e44747", "#2eb0e0", "#efc233"];
     const color = pick(colors);
-    const r = 24 * difficulty().size * rand(0.95, 1.1);
+    const r = 24 * difficulty().size * rand(0.95, 1.1) * fieldY();
     const margin = r + 10;
+    const xMin = margin;
+    const xMax = state.w - margin;
     state.targets.push({
       type: "balloon",
-      x: rand(margin, state.w - margin),
-      y: state.h - margin - rand(10, 80),
+      x: randIn(xMin, xMax, state.w * 0.5),
+      y: clamp(state.h - margin - rand(8, Math.min(70, state.h * 0.12)), margin, state.h - margin),
       r,
       color,
-      vy: -rand(1.15, 1.7) * difficulty().speed,
-      vx: rand(-0.55, 0.55),
+      vy: -rand(1.15, 1.7) * difficulty().speed * fieldY(),
+      vx: rand(-0.45, 0.45) * fieldX(),
       wobble: rand(0, Math.PI * 2),
       points: 1,
       hitR: r * 0.88,
@@ -290,12 +295,16 @@
     if (countType("target") >= CAPS.target) return;
     const gold = opts.gold ?? Math.random() < 0.14;
     const penalty = opts.penalty ?? (!gold && Math.random() < 0.1);
-    const r = (gold ? 36 : 32) * difficulty().size * rand(0.9, 1.05);
+    const r = (gold ? 36 : 32) * difficulty().size * rand(0.9, 1.05) * clamp(fieldY(), 0.75, 1.1);
     const life = rand(2400, 3600) / difficulty().speed;
+    const xMin = r + 28;
+    const xMax = state.w - r - 28;
+    const yMin = r + 72;
+    const yMax = state.h - r - 46;
     state.targets.push({
       type: "target",
-      x: rand(r + 36, state.w - r - 36),
-      y: rand(r + 90, state.h - r - 50),
+      x: randIn(xMin, xMax, state.w * 0.5),
+      y: randIn(yMin, yMax, state.h * 0.42),
       r,
       maxR: r,
       life,
@@ -308,18 +317,27 @@
     });
   }
 
+  function tossSpeed(peakFrac, base) {
+    const peak = state.h * peakFrac;
+    const need = Math.sqrt(Math.max(36, peak * 0.4));
+    return base * clamp(need / 9.2, 0.68, 1.3) * difficulty().speed;
+  }
+
   function spawnCan() {
     if (countType("can") >= CAPS.can) return;
     const fromLeft = Math.random() < 0.5;
-    const r = 20 * difficulty().size;
+    const r = 20 * difficulty().size * clamp(fieldY(), 0.75, 1.1);
     const hp = 1 + ((Math.random() * 5) | 0);
+    const inset = Math.min(state.w * 0.22, 120);
     state.targets.push({
       type: "can",
-      x: fromLeft ? rand(50, state.w * 0.35) : rand(state.w * 0.65, state.w - 50),
-      y: state.h - 40,
+      x: fromLeft
+        ? randIn(36, inset + 20, state.w * 0.22)
+        : randIn(state.w - inset - 20, state.w - 36, state.w * 0.78),
+      y: state.h - 28,
       r,
-      vx: (fromLeft ? 1 : -1) * rand(0.6, 1.3) * difficulty().speed,
-      vy: -rand(6.5, 8.8) * difficulty().speed,
+      vx: (fromLeft ? 1 : -1) * rand(0.55, 1.15) * difficulty().speed * fieldX(),
+      vy: -tossSpeed(0.46, rand(6.5, 8.8)),
       g: 0.2,
       rot: rand(-0.2, 0.2),
       spin: rand(-0.08, 0.08),
@@ -344,15 +362,18 @@
     ];
     const kind = pick(kinds);
     const fromLeft = Math.random() < 0.5;
-    const r = 34 * difficulty().size * rand(0.95, 1.12);
+    const r = 34 * difficulty().size * rand(0.95, 1.12) * clamp(fieldY(), 0.72, 1.08);
+    const inset = Math.min(state.w * 0.2, 130);
     state.targets.push({
       type: "fruit",
       fruit: kind.name,
-      x: fromLeft ? rand(60, 140) : rand(state.w - 140, state.w - 60),
-      y: state.h + 10,
+      x: fromLeft
+        ? randIn(40, inset + 24, state.w * 0.2)
+        : randIn(state.w - inset - 24, state.w - 40, state.w * 0.8),
+      y: state.h + 8,
       r,
-      vx: (fromLeft ? 1 : -1) * rand(1.4, 2.4) * difficulty().speed,
-      vy: -rand(8.2, 10.2) * difficulty().speed,
+      vx: (fromLeft ? 1 : -1) * rand(1.1, 1.9) * difficulty().speed * fieldX(),
+      vy: -tossSpeed(0.5, rand(8.2, 10.2)),
       g: 0.2,
       rot: rand(0, Math.PI * 2),
       spin: rand(-0.08, 0.08),
@@ -362,7 +383,7 @@
   }
 
   function spawnSaucerAt(x, y, opts = {}) {
-    const r = 28 * difficulty().size * (opts.scale || 1);
+    const r = 28 * difficulty().size * (opts.scale || 1) * clamp(fieldY(), 0.72, 1.08);
     const gold = opts.gold ?? Math.random() < 0.12;
     state.targets.push({
       type: "saucer",
@@ -384,11 +405,14 @@
   function spawnSaucerWave(count) {
     // clear leftovers
     state.targets = state.targets.filter((t) => t.type !== "saucer");
+    const cols = Math.min(5, count);
+    const rowGap = Math.min(70, state.h * 0.13);
+    const y0 = clamp(state.h * 0.14, 52, 86);
     for (let i = 0; i < count; i++) {
-      const col = (i % Math.min(5, count)) + 1;
-      const row = Math.floor(i / Math.min(5, count));
-      const x = (state.w / (Math.min(5, count) + 1)) * col + rand(-12, 12);
-      const y = 70 + row * 70 + rand(-8, 8);
+      const col = (i % cols) + 1;
+      const row = Math.floor(i / cols);
+      const x = clamp((state.w / (cols + 1)) * col + rand(-10, 10), 36, state.w - 36);
+      const y = clamp(y0 + row * rowGap + rand(-6, 6), 48, state.h * 0.58);
       spawnSaucerAt(x, y, { gold: count >= 10 && i === 0 });
     }
   }
@@ -471,13 +495,8 @@
     if (gold < 1 && state.demoAcc > 2600 && Math.random() < 0.006) {
       spawnBullseye({ gold: true, penalty: false });
     }
-    if (
-      countType("saucer") + countType("meteor") < 1 &&
-      state.demoAcc > 1100 &&
-      Math.random() < 0.006
-    ) {
-      if (Math.random() < 0.42) spawnMeteor();
-      else spawnTitleSaucer();
+    if (countType("saucer") < 1 && state.demoAcc > 1100 && Math.random() < 0.006) {
+      spawnTitleSaucer();
     }
     updateTargets(dt * 0.55);
   }
@@ -590,7 +609,7 @@
     state.targets = state.targets.filter(
       (t) => t.type !== "saucer" && t.type !== "flyby" && t.type !== "meteor"
     );
-    const r = Math.min(78, state.w * 0.11);
+    const r = Math.min(78, state.w * 0.11, state.h * 0.16);
     const boss = {
       type: "boss",
       x: state.w * 0.5,
@@ -637,9 +656,9 @@
   }
 
   function teleportBoss(boss) {
-    const m = boss.r + 30;
-    boss.x = rand(m, state.w - m);
-    boss.y = rand(m + 40, state.h * 0.55);
+    const m = boss.r + 24;
+    boss.x = randIn(m, state.w - m, state.w * 0.5);
+    boss.y = randIn(m + 36, state.h * 0.55, state.h * 0.32);
     boss.teleportIn = 1;
     boss.vx = 0;
     boss.vy = 0;
@@ -657,7 +676,7 @@
     state.targets.push({
       type: "miniufo",
       x: fromLeft ? -30 : state.w + 30,
-      y: rand(80, state.h * 0.55),
+      y: randIn(70, state.h * 0.52, state.h * 0.3),
       r,
       vx: (fromLeft ? 1 : -1) * rand(2.2, 3.6),
       vy: rand(-0.8, 0.8),
@@ -843,18 +862,20 @@
         const p = clamp(t.life / t.maxLife, 0, 1);
         t.r = t.maxR * (0.4 + 0.6 * p);
         if (t.life <= 0) dead.push(i);
-      } else if (t.type === "can") {
+      } else if (t.type === "can" || t.type === "fruit") {
         t.vy += t.g * (dt / 16.67);
         t.x += t.vx * (dt / 16.67);
         t.y += t.vy * (dt / 16.67);
         t.rot += t.spin;
-        if (t.y > state.h + 60 || t.x < -80 || t.x > state.w + 80) dead.push(i);
-      } else if (t.type === "fruit") {
-        t.vy += t.g * (dt / 16.67);
-        t.x += t.vx * (dt / 16.67);
-        t.y += t.vy * (dt / 16.67);
-        t.rot += t.spin;
-        if (t.y > state.h + 60 || t.x < -60 || t.x > state.w + 60) dead.push(i);
+        const m = t.r + 8;
+        if (t.x < m) {
+          t.x = m;
+          t.vx = Math.abs(t.vx);
+        } else if (t.x > state.w - m) {
+          t.x = state.w - m;
+          t.vx = -Math.abs(t.vx);
+        }
+        if (t.y > state.h + 70 || t.y < -90) dead.push(i);
       } else if (t.type === "saucer") {
         t.wobble += dt * 0.0035;
         if (t.exiting) {
@@ -877,8 +898,8 @@
             t.y = m + 40;
             t.vy = Math.abs(t.vy) + 0.15;
           }
-          if (t.y > state.h * 0.7) {
-            t.y = state.h * 0.7;
+          if (t.y > state.h * 0.62) {
+            t.y = state.h * 0.62;
             t.vy = -Math.abs(t.vy) - 0.15;
           }
           if (Math.random() < 0.004) {
@@ -920,8 +941,8 @@
       } else if (t.type === "sun") {
         t.pulse = (t.pulse || 0) + dt * 0.003;
     // keep sun parked upper-right, slight bob
-        t.x = state.w * 0.82;
-        t.y = state.h * 0.16 + Math.sin(t.pulse) * 4;
+        t.x = clamp(state.w * 0.82, t.r + 16, state.w - t.r - 16);
+        t.y = clamp(state.h * 0.16, t.r + 16, state.h * 0.3) + Math.sin(t.pulse) * 4;
       } else if (t.type === "boss") {
         t.angle += dt * 0.002;
         if (t.teleportIn > 0) t.teleportIn = Math.max(0, t.teleportIn - dt * 0.004);
@@ -1825,12 +1846,41 @@
     state.raf = requestAnimationFrame(loop);
   }
 
+  function keepInField(t) {
+    const pad = (t.r || 16) + 8;
+    const roam =
+      t.type === "meteor" ||
+      t.type === "flyby" ||
+      t.type === "miniufo" ||
+      (t.type === "saucer" && t.exiting);
+    if (roam) {
+      t.x = clamp(t.x, -90, state.w + 90);
+      t.y = clamp(t.y, -90, state.h + 90);
+      return;
+    }
+    t.x = clamp(t.x, pad, state.w - pad);
+    if (t.type === "fruit" || t.type === "can") {
+      t.y = clamp(t.y, -40, state.h + 20);
+      return;
+    }
+    const top = pad + (t.type === "target" || t.type === "saucer" || t.type === "boss" ? 32 : 0);
+    const bottom =
+      t.type === "boss" || t.type === "saucer"
+        ? state.h * 0.62
+        : t.type === "sun"
+          ? state.h * 0.3
+          : state.h - pad;
+    t.y = clamp(t.y, top, Math.max(top + 10, bottom));
+  }
+
   function resize() {
     const canvas = state.canvas;
     if (!canvas) return;
     const shell = canvas.parentElement;
-    const w = Math.max(320, shell?.clientWidth || window.innerWidth);
-    const h = Math.max(280, shell?.clientHeight || window.innerHeight);
+    const prevW = state.w;
+    const prevH = state.h;
+    const w = Math.max(280, shell?.clientWidth || window.innerWidth);
+    const h = Math.max(240, shell?.clientHeight || window.innerHeight);
     state.w = w;
     state.h = h;
     state.dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -1838,6 +1888,19 @@
     canvas.height = Math.floor(h * state.dpr);
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
+    if (prevW > 40 && prevH > 40 && (prevW !== w || prevH !== h)) {
+      const sx = w / prevW;
+      const sy = h / prevH;
+      for (const t of state.targets) {
+        const oldR = t.r || 16;
+        t.x *= sx;
+        t.y *= sy;
+        if (t.r) t.r = Math.min(t.r * Math.min(sx, sy), Math.min(w, h) * 0.22);
+        if (t.maxR) t.maxR = t.r;
+        if (t.hitR) t.hitR *= (t.r || oldR) / oldR;
+        keepInField(t);
+      }
+    }
     draw();
   }
 
@@ -1980,6 +2043,11 @@
     window.addEventListener("resize", () => {
       if (state.active) resize();
     });
+    if (window.ResizeObserver) {
+      new ResizeObserver(() => {
+        if (state.active) resize();
+      }).observe(shell);
+    }
 
     window.ZapGallery = { activate, deactivate, isActive: () => state.active };
   }
