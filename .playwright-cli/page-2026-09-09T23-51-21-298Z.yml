@@ -1,0 +1,49 @@
+- generic [ref=f1e2]:
+  - main [ref=f1e3]:
+    - generic [ref=f1e5]:
+      - button "Open About Me" [ref=f1e6]:
+        - generic [ref=f1e7]:
+          - img "Disc" [ref=f1e8]
+          - paragraph [ref=f1e9]: About Me
+      - button "Open Work Experience" [ref=f1e10]:
+        - generic [ref=f1e12]:
+          - generic [ref=f1e13]: Work Experience
+          - generic [ref=f1e14]: My Career Path
+      - button "Open Certifications" [ref=f1e15]:
+        - generic [ref=f1e16]:
+          - paragraph [ref=f1e17]: Certifications
+          - paragraph [ref=f1e18]: My Credentials
+      - link "Open GitHub" [ref=f1e19]:
+        - /url: https://github.com/AverageNftEnjoyer
+        - generic [ref=f1e20]:
+          - paragraph [ref=f1e21]: Github
+          - paragraph [ref=f1e22]: My Code
+      - link "Open LinkedIn" [ref=f1e23]:
+        - /url: https://www.linkedin.com/in/jack-pastor-816157223/
+        - generic [ref=f1e24]:
+          - paragraph [ref=f1e25]: Linkedin
+          - paragraph [ref=f1e26]: Let's Connect
+      - link "Open Resume" [ref=f1e27]:
+        - /url: assets/JackPastorResume.pdf
+        - generic [ref=f1e28]:
+          - paragraph [ref=f1e29]: Resume
+          - paragraph [ref=f1e30]: View Resume
+      - link "Open QueryLens" [ref=f1e31]:
+        - /url: https://querycompanion.vercel.app/
+        - generic [ref=f1e32]:
+          - paragraph [ref=f1e33]: Querylens
+          - paragraph [ref=f1e34]: SQL Companion Tool
+      - generic [ref=f1e37]:
+        - generic [ref=f1e38]: Nova.AIO
+        - generic [ref=f1e39]: Multi-Agent Framework
+      - button "Open Arcade" [ref=f1e40]:
+        - generic [ref=f1e42]:
+          - generic [ref=f1e43]: Arcade
+          - generic [ref=f1e44]: Zap Gallery
+      - paragraph [ref=f1e47]: Coming Soon
+      - paragraph [ref=f1e50]: Coming Soon
+      - paragraph [ref=f1e53]: Coming Soon
+  - generic [ref=f1e54]:
+    - button "Home" [ref=f1e55]
+    - button "Next" [ref=f1e57]
+    - paragraph [ref=f1e62]: Jack Pastor

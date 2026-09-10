@@ -86,11 +86,19 @@
             <button class="card channel-shadow channel-btn" type="button" data-channel="arcade" aria-label="Open Arcade">
               <div class="card-content card-arcade">
                 <div class="card-arcade-scene" aria-hidden="true">
-                  <span class="card-arcade-balloon"></span>
-                  <span class="card-arcade-target"></span>
-                  <span class="card-arcade-ufo"></span>
-                  <span class="card-arcade-fruit"></span>
-                  <span class="card-arcade-can"></span>
+                  <span class="card-arcade-sun"></span>
+                  <span class="card-arcade-cloud c1"></span>
+                  <span class="card-arcade-cloud c2"></span>
+                  <span class="card-arcade-hill back"></span>
+                  <span class="card-arcade-hill mid"></span>
+                  <span class="card-arcade-ufo"><span class="card-arcade-ufo-beam"></span></span>
+                  <span class="card-arcade-meteor"></span>
+                  <span class="card-arcade-target t1"></span>
+                  <span class="card-arcade-target gold"></span>
+                  <span class="card-arcade-balloon b1"></span>
+                  <span class="card-arcade-balloon b2"></span>
+                  <span class="card-arcade-spark"></span>
+                  <span class="card-arcade-rail"></span>
                 </div>
                 <div class="card-reveal">
                   <span class="card-title">Arcade</span>
@@ -186,10 +194,10 @@
                       </div>
                       <div class="zap-hud-center">
                         <p class="zap-brand">Zap Gallery</p>
-                        <p class="zap-wave" data-zap-wave>Balloons</p>
                         <p class="zap-combo" data-zap-combo hidden>0 hit combo</p>
                       </div>
                       <div class="zap-hud-right">
+                        <p class="zap-time" data-zap-time>2:35</p>
                         <div class="zap-boss" data-zap-boss hidden>
                           <span class="zap-boss-label">Boss</span>
                           <div class="zap-boss-track">
@@ -199,10 +207,12 @@
                       </div>
                     </div>
                     <div class="zap-overlay" data-zap-overlay>
-                      <p class="zap-overlay-kicker" data-zap-kicker>Arcade</p>
-                      <h3 class="zap-overlay-title" data-zap-title>Zap Gallery</h3>
-                      <p class="zap-overlay-hint" data-zap-hint>Skill run: sparse targets, combo multipliers, then a teleporting boss.</p>
-                      <button class="pill-btn zap-start" type="button" data-zap-start>Play</button>
+                      <div class="zap-overlay-card">
+                        <p class="zap-overlay-kicker" data-zap-kicker>Arcade</p>
+                        <h3 class="zap-overlay-title" data-zap-title>Zap Gallery</h3>
+                        <p class="zap-overlay-hint" data-zap-hint>Skill run: sparse targets, combo multipliers, then a teleporting boss.</p>
+                        <button class="pill-btn zap-start" type="button" data-zap-start>Play</button>
+                      </div>
                     </div>
                   </div>
                 </section>

@@ -2,17 +2,18 @@
 (() => {
   const STORAGE_KEY = "zap-gallery-best";
   const COMBO_START = 5;
-  const GAME_MS = 120000;
-  const BOSS_AT = 100000;
+  const GAME_MS = 155000;
+  const BOSS_AT = 128000;
   const BOSS_HP = 48;
   const BOSS_HIT_PTS = 2;
   const BOSS_CLEAR_BONUS = 150;
+  const SAUCER_WAVES = [5, 7, 10];
 
   const PHASES = [
-    { id: "balloons", until: 22000, label: "Balloons" },
-    { id: "targets", until: 44000, label: "Targets" },
-    { id: "cans", until: 64000, label: "Cans" },
-    { id: "fruit", until: 86000, label: "Fruit" },
+    { id: "balloons", until: 16000, label: "Balloons" },
+    { id: "targets", until: 48000, label: "Targets" },
+    { id: "cans", until: 62000, label: "Cans" },
+    { id: "fruit", until: 78000, label: "Fruit" },
     { id: "saucers", until: BOSS_AT, label: "Saucers" },
     { id: "boss", until: GAME_MS, label: "Boss" },
   ];
@@ -21,10 +22,10 @@
   const CAPS = {
     balloon: 5,
     target: 6,
-    can: 2,
+    can: 3,
     fruit: 3,
-    saucer: 2,
-    meteor: 1,
+    flyby: 2,
+    miniufo: 4,
   };
 
   const state = {
@@ -37,12 +38,24 @@
     combo: 0,
     elapsed: 0,
     spawnAcc: 0,
-    meteorAcc: 0,
+    flybyAcc: 0,
+    miniAcc: 0,
     targets: [],
     fx: [],
     floats: [],
     shake: 0,
     boss: null,
+    night: false,
+    nightBlend: 0,
+    stars: [],
+    sunSpawned: false,
+    forceBoss: false,
+    demoAcc: 0,
+    saucerWave: {
+      index: 0,
+      stage: "idle", // idle | active | exiting | gap | done
+      timer: 0,
+    },
     pointer: { x: 0, y: 0, in: false },
     canvas: null,
     ctx: null,
@@ -58,6 +71,7 @@
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
   function phaseAt(t) {
+    if (state.forceBoss || state.boss) return PHASES[PHASES.length - 1];
     return PHASES.find((p) => t < p.until) || PHASES[PHASES.length - 1];
   }
 
@@ -101,12 +115,17 @@
   }
 
   function updateHud() {
-    const { score, best, combo, wave, bossWrap, bossFill } = state.els;
+    const { score, best, combo, time, bossWrap, bossFill } = state.els;
     if (score) score.textContent = String(state.score);
     if (best) best.textContent = `Best ${state.best}`;
 
-    const phase = phaseAt(state.elapsed);
-    if (wave) wave.textContent = phase.label;
+    const left = Math.max(0, GAME_MS - state.elapsed);
+    const secs = Math.ceil(left / 1000);
+    if (time) {
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      time.textContent = `${m}:${String(s).padStart(2, "0")}`;
+    }
 
     if (combo) {
       const show = state.mode === "playing" && state.combo >= COMBO_START;
@@ -208,20 +227,40 @@
     state.combo = 0;
     state.elapsed = 0;
     state.spawnAcc = 0;
-    state.meteorAcc = 0;
+    state.flybyAcc = 0;
+    state.miniAcc = 0;
     state.targets = [];
     state.fx = [];
     state.floats = [];
     state.shake = 0;
     state.boss = null;
+    state.night = false;
+    state.nightBlend = 0;
+    state.sunSpawned = false;
+    state.forceBoss = false;
+    state.demoAcc = 0;
+    state.saucerWave = { index: 0, stage: "idle", timer: 0 };
     state._lastBalloonColor = null;
+    buildStars();
     updateHud();
   }
 
+  function buildStars() {
+    state.stars = Array.from({ length: 70 }, () => ({
+      x: Math.random(),
+      y: Math.random() * 0.72,
+      r: rand(0.6, 2.2),
+      tw: rand(0, Math.PI * 2),
+      sp: rand(0.002, 0.006),
+    }));
+  }
+
   function startGame() {
+    if (state.mode === "playing") return;
     resetRun();
     state.mode = "playing";
     setOverlay(false);
+    spawnSun();
     spawnForPhase();
     updateHud();
   }
@@ -239,19 +278,18 @@
       y: state.h - margin - rand(10, 80),
       r,
       color,
-      vy: -rand(1.05, 1.55) * difficulty().speed,
+      vy: -rand(1.15, 1.7) * difficulty().speed,
       vx: rand(-0.55, 0.55),
       wobble: rand(0, Math.PI * 2),
-      life: rand(8000, 12000),
       points: 1,
       hitR: r * 0.88,
     });
   }
 
-  function spawnBullseye() {
+  function spawnBullseye(opts = {}) {
     if (countType("target") >= CAPS.target) return;
-    const gold = Math.random() < 0.14;
-    const penalty = !gold && Math.random() < 0.1;
+    const gold = opts.gold ?? Math.random() < 0.14;
+    const penalty = opts.penalty ?? (!gold && Math.random() < 0.1);
     const r = (gold ? 36 : 32) * difficulty().size * rand(0.9, 1.05);
     const life = rand(2400, 3600) / difficulty().speed;
     state.targets.push({
@@ -274,6 +312,7 @@
     if (countType("can") >= CAPS.can) return;
     const fromLeft = Math.random() < 0.5;
     const r = 20 * difficulty().size;
+    const hp = 1 + ((Math.random() * 5) | 0);
     state.targets.push({
       type: "can",
       x: fromLeft ? rand(50, state.w * 0.35) : rand(state.w * 0.65, state.w - 50),
@@ -284,9 +323,9 @@
       g: 0.2,
       rot: rand(-0.2, 0.2),
       spin: rand(-0.08, 0.08),
-      hp: 2,
-      maxHp: 2,
-      points: 4,
+      hp,
+      maxHp: hp,
+      points: 2 + hp,
       hitR: r * 1.15,
       label: pick(["SODA", "POP", "ZAP"]),
       tint: pick(["#c45c3e", "#3d7ea6", "#d4a017"]),
@@ -296,20 +335,19 @@
   function spawnFruit() {
     if (countType("fruit") >= CAPS.fruit) return;
     const kinds = [
-      { name: "apple", color: "#e23b3b", accent: "#8f1f1f", leaf: "#3f8f3a", points: 2 },
-      { name: "orange", color: "#f08a24", accent: "#c45e10", leaf: null, points: 2 },
-      { name: "banana", color: "#f5d447", accent: "#c9a61a", leaf: null, points: 3 },
-      { name: "watermelon", color: "#2f9e57", accent: "#d64545", leaf: null, points: 3 },
+      { name: "apple", points: 2 },
+      { name: "orange", points: 2 },
+      { name: "strawberry", points: 3 },
+      { name: "watermelon", points: 3 },
+      { name: "peach", points: 2 },
+      { name: "grape", points: 3 },
     ];
     const kind = pick(kinds);
     const fromLeft = Math.random() < 0.5;
-    const r = 32 * difficulty().size * rand(0.95, 1.12);
+    const r = 34 * difficulty().size * rand(0.95, 1.12);
     state.targets.push({
       type: "fruit",
       fruit: kind.name,
-      color: kind.color,
-      accent: kind.accent,
-      leaf: kind.leaf,
       x: fromLeft ? rand(60, 140) : rand(state.w - 140, state.w - 60),
       y: state.h + 10,
       r,
@@ -323,33 +361,133 @@
     });
   }
 
-  function spawnSaucer() {
-    if (countType("saucer") >= CAPS.saucer) return;
-    const r = 30 * difficulty().size;
-    const fromTop = Math.random() < 0.55;
-    const gold = Math.random() < 0.18;
+  function spawnSaucerAt(x, y, opts = {}) {
+    const r = 28 * difficulty().size * (opts.scale || 1);
+    const gold = opts.gold ?? Math.random() < 0.12;
     state.targets.push({
       type: "saucer",
-      x: rand(r + 50, state.w - r - 50),
-      y: fromTop ? -r - 10 : rand(state.h * 0.2, state.h * 0.45),
+      x,
+      y,
       r,
-      vx: rand(-1.1, 1.1) * difficulty().speed,
-      vy: fromTop ? rand(0.7, 1.2) * difficulty().speed : rand(-0.35, 0.55),
+      vx: rand(-1.4, 1.4) * difficulty().speed,
+      vy: rand(-0.9, 0.9) * difficulty().speed,
       wobble: rand(0, Math.PI * 2),
-      beam: Math.random() < 0.45,
-      life: rand(7000, 10000),
+      beam: Math.random() < 0.4,
       gold,
       points: gold ? 5 : 3,
       hitR: r * 0.92,
+      wave: true,
+      exiting: false,
     });
   }
 
+  function spawnSaucerWave(count) {
+    // clear leftovers
+    state.targets = state.targets.filter((t) => t.type !== "saucer");
+    for (let i = 0; i < count; i++) {
+      const col = (i % Math.min(5, count)) + 1;
+      const row = Math.floor(i / Math.min(5, count));
+      const x = (state.w / (Math.min(5, count) + 1)) * col + rand(-12, 12);
+      const y = 70 + row * 70 + rand(-8, 8);
+      spawnSaucerAt(x, y, { gold: count >= 10 && i === 0 });
+    }
+  }
+
+  function beginSaucerWave() {
+    const sw = state.saucerWave;
+    if (sw.index >= SAUCER_WAVES.length) {
+      sw.stage = "done";
+      spawnBoss();
+      return;
+    }
+    const n = SAUCER_WAVES[sw.index];
+    spawnSaucerWave(n);
+    sw.stage = "active";
+    sw.timer = 11000 + n * 550;
+    updateHud();
+  }
+
+  function exitSaucerWave() {
+    for (const t of state.targets) {
+      if (t.type !== "saucer") continue;
+      t.exiting = true;
+      t.vx = (t.x < state.w * 0.5 ? -1 : 1) * rand(2.2, 3.6);
+      t.vy = -rand(1.6, 3.2);
+    }
+    state.saucerWave.stage = "exiting";
+    state.saucerWave.timer = 3500;
+  }
+
+  function completeSaucerWave(gapMs) {
+    const sw = state.saucerWave;
+    state.targets = state.targets.filter((t) => t.type !== "saucer");
+    sw.index += 1;
+    if (sw.index >= SAUCER_WAVES.length) {
+      sw.stage = "done";
+      sw.timer = 0;
+      spawnBoss();
+      return;
+    }
+    sw.stage = "gap";
+    sw.timer = gapMs;
+  }
+
+  function spawnTitleSaucer() {
+    if (countType("saucer") >= 1) return;
+    const fromLeft = Math.random() < 0.5;
+    spawnSaucerAt(
+      fromLeft ? -48 : state.w + 48,
+      rand(state.h * 0.16, state.h * 0.4),
+      { scale: 1.08, gold: false }
+    );
+    const t = state.targets[state.targets.length - 1];
+    if (!t || t.type !== "saucer") return;
+    t.vx = (fromLeft ? 1 : -1) * rand(1.4, 2.1);
+    t.vy = rand(-0.08, 0.12);
+    t.exiting = true;
+    t.beam = true;
+  }
+
+  function seedTitleDemo() {
+    state.targets = [];
+    state.fx = [];
+    state.floats = [];
+    state.demoAcc = 0;
+    if (state.w < 40) return;
+    spawnBalloon();
+    spawnBalloon();
+    spawnBullseye({ gold: false, penalty: false });
+    spawnTitleSaucer();
+  }
+
+  function tickTitleDemo(dt) {
+    state.demoAcc += dt;
+    if (countType("balloon") < 2 && Math.random() < 0.012) spawnBalloon();
+    const regular = state.targets.filter((t) => t.type === "target" && !t.gold).length;
+    const gold = state.targets.filter((t) => t.type === "target" && t.gold).length;
+    if (regular < 1 && Math.random() < 0.007) {
+      spawnBullseye({ gold: false, penalty: false });
+    }
+    if (gold < 1 && state.demoAcc > 2600 && Math.random() < 0.006) {
+      spawnBullseye({ gold: true, penalty: false });
+    }
+    if (
+      countType("saucer") + countType("meteor") < 1 &&
+      state.demoAcc > 1100 &&
+      Math.random() < 0.006
+    ) {
+      if (Math.random() < 0.42) spawnMeteor();
+      else spawnTitleSaucer();
+    }
+    updateTargets(dt * 0.55);
+  }
+
   function spawnMeteor() {
-    if (countType("meteor") >= CAPS.meteor) return;
     const fromLeft = Math.random() < 0.5;
     const r = 18;
     state.targets.push({
       type: "meteor",
+      kind: "meteor",
       x: fromLeft ? -40 : state.w + 40,
       y: rand(60, state.h * 0.4),
       r,
@@ -363,8 +501,95 @@
     });
   }
 
+  function spawnBlimp() {
+    const fromLeft = Math.random() < 0.5;
+    state.targets.push({
+      type: "flyby",
+      kind: "blimp",
+      x: fromLeft ? -80 : state.w + 80,
+      y: rand(90, state.h * 0.32),
+      r: 34,
+      vx: (fromLeft ? 1 : -1) * rand(1.1, 1.7),
+      vy: Math.sin(rand(0, 6)) * 0.2,
+      facing: fromLeft ? 1 : -1,
+      points: 15,
+      hitR: 36,
+      bob: rand(0, Math.PI * 2),
+    });
+  }
+
+  function spawnRocket() {
+    state.targets.push({
+      type: "flyby",
+      kind: "rocket",
+      x: rand(state.w * 0.2, state.w * 0.8),
+      y: state.h + 40,
+      r: 16,
+      vx: rand(-0.6, 0.6),
+      vy: -rand(4.5, 6.5),
+      rot: -Math.PI / 2,
+      points: 18,
+      hitR: 20,
+      trail: [],
+    });
+  }
+
+  function spawnKite() {
+    const fromLeft = Math.random() < 0.5;
+    state.targets.push({
+      type: "flyby",
+      kind: "kite",
+      x: fromLeft ? -30 : state.w + 30,
+      y: rand(120, state.h * 0.5),
+      r: 18,
+      vx: (fromLeft ? 1 : -1) * rand(1.8, 2.6),
+      vy: rand(-0.4, 0.4),
+      bob: rand(0, Math.PI * 2),
+      color: pick(["#e44747", "#3cc0ec", "#f0c14a", "#c47adf"]),
+      points: 10,
+      hitR: 20,
+    });
+  }
+
+  function spawnFlyby() {
+    if (countType("flyby") + countType("meteor") >= CAPS.flyby) return;
+    const roll = Math.random();
+    if (roll < 0.34) spawnMeteor();
+    else if (roll < 0.58) spawnBlimp();
+    else if (roll < 0.8) spawnRocket();
+    else spawnKite();
+  }
+
+  function spawnSun() {
+    if (state.sunSpawned || state.night) return;
+    state.sunSpawned = true;
+    const r = 36;
+    state.targets.push({
+      type: "sun",
+      x: state.w * 0.82,
+      y: state.h * 0.16,
+      r,
+      hitR: r * 0.85,
+      points: 25,
+      pulse: 0,
+    });
+  }
+
+  function triggerNight(x, y) {
+    state.night = true;
+    state.targets = state.targets.filter((t) => t.type !== "sun");
+    addFx(x, y, "hit", "#ffd56a");
+    addFloat(x, y - 20, "NIGHT!", "#ffd56a");
+    state.shake = 10;
+  }
+
   function spawnBoss() {
     if (state.boss) return;
+    state.forceBoss = true;
+    // clear saucers
+    state.targets = state.targets.filter(
+      (t) => t.type !== "saucer" && t.type !== "flyby" && t.type !== "meteor"
+    );
     const r = Math.min(78, state.w * 0.11);
     const boss = {
       type: "boss",
@@ -376,14 +601,39 @@
       hitR: r * 1.05,
       points: BOSS_HIT_PTS,
       teleportIn: 0,
-      nextTeleport: 900,
+      nextAction: 1400,
       flash: 0,
       angle: 0,
+      behavior: "stay", // stay | teleport | fly
+      vx: 0,
+      vy: 0,
+      offscreen: false,
     };
     state.boss = boss;
-    state.targets = [boss];
+    state.targets.push(boss);
+    if (!state.targets.some((t) => t.type === "sun") && !state.night) spawnSun();
     addFloat(state.w * 0.5, state.h * 0.18, "BOSS!", "#f0c14a");
     updateHud();
+  }
+
+  function pickBossBehavior(boss) {
+    const roll = Math.random();
+    if (roll < 0.34) {
+      boss.behavior = "teleport";
+      teleportBoss(boss);
+    } else if (roll < 0.62) {
+      boss.behavior = "fly";
+      boss.offscreen = false;
+      const side = Math.random() < 0.5 ? -1 : 1;
+      boss.vx = side * rand(3.2, 4.8);
+      boss.vy = rand(-1.2, 1.2);
+      boss.nextAction = rand(1800, 2800);
+    } else {
+      boss.behavior = "stay";
+      boss.vx = rand(-0.35, 0.35);
+      boss.vy = rand(-0.25, 0.25);
+      boss.nextAction = rand(1600, 2600);
+    }
   }
 
   function teleportBoss(boss) {
@@ -391,22 +641,41 @@
     boss.x = rand(m, state.w - m);
     boss.y = rand(m + 40, state.h * 0.55);
     boss.teleportIn = 1;
-    boss.nextTeleport = rand(700, 1400);
+    boss.vx = 0;
+    boss.vy = 0;
+    boss.offscreen = false;
+    boss.behavior = "stay";
+    boss.nextAction = rand(900, 1800);
     addFx(boss.x, boss.y, "hit", "#b388ff");
+  }
+
+  function spawnMiniUfo() {
+    if (!state.boss || countType("miniufo") >= CAPS.miniufo) return;
+    const fromLeft = Math.random() < 0.5;
+    const r = 14 * rand(0.9, 1.15);
+    const gold = Math.random() < 0.15;
+    state.targets.push({
+      type: "miniufo",
+      x: fromLeft ? -30 : state.w + 30,
+      y: rand(80, state.h * 0.55),
+      r,
+      vx: (fromLeft ? 1 : -1) * rand(2.2, 3.6),
+      vy: rand(-0.8, 0.8),
+      wobble: rand(0, Math.PI * 2),
+      gold,
+      points: gold ? 4 : 2,
+      hitR: r * 1.05,
+    });
   }
 
   function spawnForPhase() {
     const phase = phaseAt(state.elapsed).id;
-    if (phase === "boss") return;
+    if (phase === "boss" || phase === "saucers") return;
     if (phase === "balloons") spawnBalloon();
     else if (phase === "targets") spawnBullseye();
     else if (phase === "cans") {
-      // sparse: often skip a spawn tick
-      if (Math.random() < 0.45) spawnCan();
+      if (Math.random() < 0.7) spawnCan();
     } else if (phase === "fruit") spawnFruit();
-    else if (phase === "saucers") {
-      if (Math.random() < 0.55) spawnSaucer();
-    }
   }
 
   function topHitAt(x, y) {
@@ -444,7 +713,8 @@
         t.hp -= 1;
         scoreHit(BOSS_HIT_PTS, x, y, "#c9a0ff", true);
         t.flash = 1;
-        teleportBoss(t);
+        // sometimes react, sometimes stay put
+        if (Math.random() < 0.55) pickBossBehavior(t);
         if (t.hp <= 0) {
           state.targets.splice(i, 1);
           state.boss = null;
@@ -462,6 +732,13 @@
                 : "Mothership down. Play again?",
           });
         }
+        return;
+      }
+
+      if (t.type === "sun") {
+        state.targets.splice(i, 1);
+        scoreHit(t.points, x, y, "#ffd56a", true);
+        triggerNight(x, y);
         return;
       }
 
@@ -501,13 +778,33 @@
         state.shake = 8;
         updateHud();
       } else {
+        const fruitTint = {
+          apple: "#e23b3b",
+          orange: "#f08a24",
+          strawberry: "#e0233a",
+          watermelon: "#2f9e57",
+          peach: "#ff9a6b",
+          grape: "#7b5ea7",
+        };
         const color =
-          t.type === "meteor"
+          t.type === "meteor" || t.kind === "meteor"
             ? "#ff7a3d"
-            : t.gold
-              ? "#f0c14a"
-              : t.color || t.tint || "#3cc0ec";
-        scoreHit(pts, x, y, color, t.gold || t.type === "meteor");
+            : t.type === "flyby"
+              ? t.kind === "kite"
+                ? t.color
+                : "#9ec9e8"
+              : t.type === "fruit"
+                ? fruitTint[t.fruit] || "#3cc0ec"
+                : t.gold
+                  ? "#f0c14a"
+                  : t.color || t.tint || "#3cc0ec";
+        scoreHit(
+          pts,
+          x,
+          y,
+          color,
+          t.gold || t.type === "meteor" || t.type === "flyby" || t.type === "fruit"
+        );
       }
       return;
     }
@@ -519,25 +816,6 @@
     updateHud();
   }
 
-  function bounceBalloon(t) {
-    const m = t.r + 4;
-    if (t.x < m) {
-      t.x = m;
-      t.vx = Math.abs(t.vx) + 0.12;
-    } else if (t.x > state.w - m) {
-      t.x = state.w - m;
-      t.vx = -Math.abs(t.vx) - 0.12;
-    }
-    if (t.y < m + 56) {
-      t.y = m + 56;
-      t.vy = Math.abs(t.vy) * 0.5 + 0.3;
-      t.vx += rand(-0.35, 0.35);
-    } else if (t.y > state.h - m) {
-      t.y = state.h - m;
-      t.vy = -Math.abs(t.vy);
-    }
-  }
-
   function updateTargets(dt) {
     const dead = [];
     for (let i = 0; i < state.targets.length; i++) {
@@ -545,13 +823,20 @@
       if (t.flash > 0) t.flash = Math.max(0, t.flash - dt * 0.008);
 
       if (t.type === "balloon") {
-        t.life -= dt;
         t.wobble += dt * 0.004;
-        t.x += (t.vx + Math.sin(t.wobble) * 0.4) * (dt / 16.67);
+        // always rise — never reverse upward motion
+        t.vy = -Math.abs(t.vy || 1.2);
+        t.x += (t.vx + Math.sin(t.wobble) * 0.35) * (dt / 16.67);
         t.y += t.vy * (dt / 16.67);
-        t.vy += 0.012 * (dt / 16.67);
-        bounceBalloon(t);
-        if (t.life <= 0) dead.push(i);
+        const m = t.r + 4;
+        if (t.x < m) {
+          t.x = m;
+          t.vx = Math.abs(t.vx);
+        } else if (t.x > state.w - m) {
+          t.x = state.w - m;
+          t.vx = -Math.abs(t.vx);
+        }
+        if (t.y + t.r < -20) dead.push(i);
       } else if (t.type === "target") {
         t.appear = Math.min(1, t.appear + dt / 180);
         t.life -= dt;
@@ -571,28 +856,42 @@
         t.rot += t.spin;
         if (t.y > state.h + 60 || t.x < -60 || t.x > state.w + 60) dead.push(i);
       } else if (t.type === "saucer") {
-        t.life -= dt;
-        t.wobble += dt * 0.003;
+        t.wobble += dt * 0.0035;
+        if (t.exiting) {
+          t.x += t.vx * (dt / 16.67);
+          t.y += t.vy * (dt / 16.67);
+          if (t.x < -80 || t.x > state.w + 80 || t.y < -80) dead.push(i);
+        } else {
+          t.x += (t.vx + Math.sin(t.wobble) * 0.7) * (dt / 16.67);
+          t.y += (t.vy + Math.cos(t.wobble * 0.8) * 0.45) * (dt / 16.67);
+          const m = t.r + 10;
+          if (t.x < m) {
+            t.x = m;
+            t.vx = Math.abs(t.vx) + 0.2;
+          }
+          if (t.x > state.w - m) {
+            t.x = state.w - m;
+            t.vx = -Math.abs(t.vx) - 0.2;
+          }
+          if (t.y < m + 40) {
+            t.y = m + 40;
+            t.vy = Math.abs(t.vy) + 0.15;
+          }
+          if (t.y > state.h * 0.7) {
+            t.y = state.h * 0.7;
+            t.vy = -Math.abs(t.vy) - 0.15;
+          }
+          if (Math.random() < 0.004) {
+            t.vx += rand(-0.8, 0.8);
+            t.vy += rand(-0.6, 0.6);
+          }
+        }
+      } else if (t.type === "miniufo") {
+        t.wobble += dt * 0.005;
         t.x += (t.vx + Math.sin(t.wobble) * 0.5) * (dt / 16.67);
-        t.y += t.vy * (dt / 16.67);
-        const m = t.r + 8;
-        if (t.x < m) {
-          t.x = m;
-          t.vx = Math.abs(t.vx);
-        }
-        if (t.x > state.w - m) {
-          t.x = state.w - m;
-          t.vx = -Math.abs(t.vx);
-        }
-        if (t.y < m + 50) {
-          t.y = m + 50;
-          t.vy = Math.abs(t.vy) * 0.5;
-        }
-        if (t.y > state.h * 0.72) {
-          t.y = state.h * 0.72;
-          t.vy = -Math.abs(t.vy);
-        }
-        if (t.life <= 0) dead.push(i);
+        t.y += (t.vy + Math.cos(t.wobble) * 0.35) * (dt / 16.67);
+        if (t.x < -60 || t.x > state.w + 60 || t.y < -60 || t.y > state.h + 60)
+          dead.push(i);
       } else if (t.type === "meteor") {
         t.trail.push({ x: t.x, y: t.y, life: 1 });
         if (t.trail.length > 10) t.trail.shift();
@@ -602,11 +901,59 @@
         t.y += t.vy * (dt / 16.67);
         t.rot += t.spin;
         if (t.x < -80 || t.x > state.w + 80 || t.y > state.h + 80) dead.push(i);
+      } else if (t.type === "flyby") {
+        if (t.kind === "blimp" || t.kind === "kite") {
+          t.bob = (t.bob || 0) + dt * 0.004;
+          t.y += Math.sin(t.bob) * 0.45;
+        }
+        if (t.kind === "rocket") {
+          t.trail = t.trail || [];
+          t.trail.push({ x: t.x, y: t.y, life: 1 });
+          if (t.trail.length > 8) t.trail.shift();
+          for (const p of t.trail) p.life -= dt * 0.005;
+          t.trail = t.trail.filter((p) => p.life > 0);
+        }
+        t.x += t.vx * (dt / 16.67);
+        t.y += (t.vy || 0) * (dt / 16.67);
+        if (t.x < -100 || t.x > state.w + 100 || t.y < -100 || t.y > state.h + 100)
+          dead.push(i);
+      } else if (t.type === "sun") {
+        t.pulse = (t.pulse || 0) + dt * 0.003;
+    // keep sun parked upper-right, slight bob
+        t.x = state.w * 0.82;
+        t.y = state.h * 0.16 + Math.sin(t.pulse) * 4;
       } else if (t.type === "boss") {
         t.angle += dt * 0.002;
         if (t.teleportIn > 0) t.teleportIn = Math.max(0, t.teleportIn - dt * 0.004);
-        t.nextTeleport -= dt;
-        if (t.nextTeleport <= 0) teleportBoss(t);
+        t.nextAction -= dt;
+
+        if (t.behavior === "fly") {
+          t.x += t.vx * (dt / 16.67);
+          t.y += t.vy * (dt / 16.67);
+          if (!t.offscreen && (t.x < -t.r || t.x > state.w + t.r)) {
+            t.offscreen = true;
+            t.nextAction = Math.min(t.nextAction, 400);
+          }
+          if (t.offscreen && t.nextAction <= 0) {
+            const fromLeft = Math.random() < 0.5;
+            t.x = fromLeft ? -t.r - 10 : state.w + t.r + 10;
+            t.y = rand(t.r + 50, state.h * 0.5);
+            t.vx = (fromLeft ? 1 : -1) * rand(2.8, 4.2);
+            t.vy = rand(-0.8, 0.8);
+            t.offscreen = false;
+            t.behavior = "stay";
+            t.nextAction = rand(1200, 2200);
+            addFloat(t.x, t.y - 30, "re-entry", "#c9a0ff");
+          }
+        } else if (t.behavior === "stay") {
+          t.x += (t.vx || 0) * (dt / 16.67);
+          t.y += (t.vy || 0) * (dt / 16.67) + Math.sin(t.angle * 3) * 0.25;
+          const m = t.r + 24;
+          t.x = clamp(t.x, m, state.w - m);
+          t.y = clamp(t.y, m + 30, state.h * 0.6);
+        }
+
+        if (t.nextAction <= 0 && !t.offscreen) pickBossBehavior(t);
       }
     }
     for (let i = dead.length - 1; i >= 0; i--) state.targets.splice(dead[i], 1);
@@ -631,6 +978,10 @@
   }
 
   function tick(dt) {
+    if (state.night && state.nightBlend < 1) {
+      state.nightBlend = Math.min(1, state.nightBlend + dt * 0.0012);
+    }
+
     if (state.mode === "playing") {
       const prevPhase = phaseAt(state.elapsed).id;
       state.elapsed = Math.min(GAME_MS, state.elapsed + dt);
@@ -643,28 +994,61 @@
       }
 
       if (phase === "boss") {
-        if (prevPhase !== "boss") spawnBoss();
+        if (!state.boss) spawnBoss();
+        state.miniAcc += dt;
+        if (state.miniAcc >= 1600) {
+          state.miniAcc = 0;
+          spawnMiniUfo();
+        }
+      } else if (phase === "saucers") {
+        const sw = state.saucerWave;
+        if (prevPhase !== "saucers" && sw.stage === "idle") {
+          beginSaucerWave();
+        }
+        sw.timer -= dt;
+        if (sw.stage === "active") {
+          if (countType("saucer") === 0) {
+            completeSaucerWave(180);
+          } else if (sw.timer <= 0) {
+            exitSaucerWave();
+          }
+        } else if (sw.stage === "exiting") {
+          if (countType("saucer") === 0 || sw.timer <= 0) {
+            completeSaucerWave(240);
+          }
+        } else if (sw.stage === "gap" && sw.timer <= 0) {
+          beginSaucerWave();
+        }
       } else {
         const diff = difficulty();
-        const interval =
-          phase === "cans" ? diff.spawn * 1.8 : phase === "saucers" ? diff.spawn * 1.45 : diff.spawn;
+        const interval = phase === "cans" ? diff.spawn * 1.8 : diff.spawn;
         state.spawnAcc += dt;
         while (state.spawnAcc >= interval) {
           state.spawnAcc -= interval;
           spawnForPhase();
         }
-        state.meteorAcc += dt;
-        if (state.meteorAcc >= 16000) {
-          state.meteorAcc = 0;
-          spawnMeteor();
+      }
+
+      if (phase !== "boss") {
+        state.flybyAcc += dt;
+        if (state.flybyAcc >= 11000) {
+          state.flybyAcc = 0;
+          spawnFlyby();
         }
+      }
+
+      if (!state.night && !state.targets.some((t) => t.type === "sun")) {
+        // sun can be re-offered mid-run if somehow missing before night
+        if (!state.sunSpawned) spawnSun();
       }
 
       updateTargets(dt);
       updateHud();
     } else if (state.mode === "idle") {
-      if (countType("balloon") < 3 && Math.random() < 0.02) spawnBalloon();
-      updateTargets(dt * 0.7);
+      tickTitleDemo(dt);
+    } else if (state.mode === "dead") {
+      if (state.boss) updateTargets(dt * 0.6);
+      else tickTitleDemo(dt);
     }
 
     updateFx(dt);
@@ -672,15 +1056,55 @@
 
   /* —— draw —— */
   function drawBackground(ctx) {
+    const night = state.nightBlend;
+    const dayTop = [106, 169, 212];
+    const dayMid = [169, 208, 230];
+    const dayLow = [207, 227, 181];
+    const dayBot = [181, 201, 138];
+    const nightTop = [12, 18, 42];
+    const nightMid = [24, 36, 72];
+    const nightLow = [34, 48, 70];
+    const nightBot = [28, 42, 48];
+    const mix = (a, b) =>
+      `rgb(${Math.round(a[0] + (b[0] - a[0]) * night)},${Math.round(
+        a[1] + (b[1] - a[1]) * night
+      )},${Math.round(a[2] + (b[2] - a[2]) * night)})`;
+
     const g = ctx.createLinearGradient(0, 0, 0, state.h);
-    g.addColorStop(0, "#6aa9d4");
-    g.addColorStop(0.42, "#a9d0e6");
-    g.addColorStop(0.7, "#cfe3b5");
-    g.addColorStop(1, "#b5c98a");
+    g.addColorStop(0, mix(dayTop, nightTop));
+    g.addColorStop(0.42, mix(dayMid, nightMid));
+    g.addColorStop(0.7, mix(dayLow, nightLow));
+    g.addColorStop(1, mix(dayBot, nightBot));
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, state.w, state.h);
 
-    ctx.fillStyle = "#8fb56e";
+    if (night > 0.05) {
+      ctx.save();
+      ctx.globalAlpha = night;
+      for (const s of state.stars) {
+        const tw = 0.45 + 0.55 * Math.abs(Math.sin(state.elapsed * s.sp + s.tw));
+        ctx.globalAlpha = night * tw;
+        ctx.fillStyle = "#fff8e8";
+        ctx.beginPath();
+        ctx.arc(s.x * state.w, s.y * state.h, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // moon
+      ctx.globalAlpha = night * 0.95;
+      const mx = state.w * 0.18;
+      const my = state.h * 0.16;
+      ctx.fillStyle = "#f2f0de";
+      ctx.beginPath();
+      ctx.arc(mx, my, 28, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = mix(dayTop, nightTop);
+      ctx.beginPath();
+      ctx.arc(mx + 10, my - 4, 22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    ctx.fillStyle = night > 0.5 ? "#3d5a3a" : "#8fb56e";
     ctx.beginPath();
     ctx.moveTo(0, state.h * 0.74);
     ctx.quadraticCurveTo(state.w * 0.28, state.h * 0.64, state.w * 0.52, state.h * 0.72);
@@ -689,7 +1113,7 @@
     ctx.lineTo(0, state.h);
     ctx.fill();
 
-    ctx.fillStyle = "#7a9f5c";
+    ctx.fillStyle = night > 0.5 ? "#2f4a2e" : "#7a9f5c";
     ctx.beginPath();
     ctx.moveTo(0, state.h * 0.84);
     ctx.quadraticCurveTo(state.w * 0.33, state.h * 0.76, state.w * 0.58, state.h * 0.86);
@@ -698,21 +1122,25 @@
     ctx.lineTo(0, state.h);
     ctx.fill();
 
-    ctx.fillStyle = "rgba(255,255,255,0.42)";
-    const drift = (state.elapsed * 0.008) % (state.w + 200);
-    [
-      [100, 64, 36],
-      [340, 92, 28],
-      [580, 50, 44],
-      [820, 84, 26],
-    ].forEach(([cx, cy, r], i) => {
-      const x = ((cx - drift * (0.25 + i * 0.04)) % (state.w + 160)) - 80;
-      ctx.beginPath();
-      ctx.arc(x, cy, r, 0, Math.PI * 2);
-      ctx.arc(x + r * 0.7, cy + 5, r * 0.65, 0, Math.PI * 2);
-      ctx.arc(x - r * 0.55, cy + 6, r * 0.55, 0, Math.PI * 2);
-      ctx.fill();
-    });
+    if (night < 0.85) {
+      ctx.globalAlpha = 1 - night * 0.9;
+      ctx.fillStyle = "rgba(255,255,255,0.42)";
+      const drift = (state.elapsed * 0.008) % (state.w + 200);
+      [
+        [100, 64, 36],
+        [340, 92, 28],
+        [580, 50, 44],
+        [820, 84, 26],
+      ].forEach(([cx, cy, r], i) => {
+        const x = ((cx - drift * (0.25 + i * 0.04)) % (state.w + 160)) - 80;
+        ctx.beginPath();
+        ctx.arc(x, cy, r, 0, Math.PI * 2);
+        ctx.arc(x + r * 0.7, cy + 5, r * 0.65, 0, Math.PI * 2);
+        ctx.arc(x - r * 0.55, cy + 6, r * 0.55, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+    }
   }
 
   function drawBalloon(ctx, t) {
@@ -839,83 +1267,209 @@
     ctx.save();
     ctx.translate(t.x, t.y);
     ctx.rotate(t.rot);
+    const R = t.r;
+    // ground shadow
+    ctx.fillStyle = "rgba(0,0,0,0.16)";
     ctx.beginPath();
-    ctx.arc(3, 5, t.r * 0.95, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(0,0,0,0.14)";
+    ctx.ellipse(3, R * 0.75, R * 0.72, R * 0.22, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    if (t.fruit === "banana") {
-      ctx.lineCap = "round";
-      ctx.strokeStyle = t.accent;
-      ctx.lineWidth = t.r * 0.72;
-      ctx.beginPath();
-      ctx.arc(0, 0, t.r * 0.7, 0.15 * Math.PI, 1.15 * Math.PI);
-      ctx.stroke();
-      ctx.strokeStyle = t.color;
-      ctx.lineWidth = t.r * 0.55;
-      ctx.stroke();
-      ctx.strokeStyle = "rgba(255,255,255,0.45)";
-      ctx.lineWidth = t.r * 0.12;
-      ctx.stroke();
-    } else if (t.fruit === "watermelon") {
-      const g = ctx.createRadialGradient(-t.r * 0.2, -t.r * 0.2, 4, 0, 0, t.r);
-      g.addColorStop(0, "#6fd18a");
-      g.addColorStop(0.55, t.color);
-      g.addColorStop(1, "#1f6b38");
+    if (t.fruit === "apple") {
+      const g = ctx.createRadialGradient(-R * 0.35, -R * 0.4, 2, 0, 0, R);
+      g.addColorStop(0, "#ff8a7a");
+      g.addColorStop(0.35, "#e23b3b");
+      g.addColorStop(0.75, "#b01d1d");
+      g.addColorStop(1, "#6e1010");
       ctx.fillStyle = g;
       ctx.beginPath();
-      ctx.arc(0, 0, t.r, 0, Math.PI * 2);
+      ctx.ellipse(-R * 0.12, 0, R * 0.78, R * 0.92, -0.08, 0, Math.PI * 2);
+      ctx.ellipse(R * 0.18, 0, R * 0.72, R * 0.9, 0.1, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.25)";
-      ctx.lineWidth = 3;
+      ctx.fillStyle = "rgba(255,255,255,0.35)";
+      ctx.beginPath();
+      ctx.ellipse(-R * 0.28, -R * 0.28, R * 0.18, R * 0.28, -0.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#4a2a12";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(0, -R * 0.72);
+      ctx.quadraticCurveTo(R * 0.08, -R * 0.95, R * 0.02, -R * 1.08);
+      ctx.stroke();
+      ctx.fillStyle = "#3f8f3a";
+      ctx.beginPath();
+      ctx.ellipse(R * 0.22, -R * 0.88, R * 0.32, R * 0.14, -0.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#2d5c28";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(R * 0.05, -R * 0.85);
+      ctx.quadraticCurveTo(R * 0.22, -R * 0.88, R * 0.4, -R * 0.82);
+      ctx.stroke();
+    } else if (t.fruit === "orange") {
+      const g = ctx.createRadialGradient(-R * 0.3, -R * 0.35, 3, 0, 0, R);
+      g.addColorStop(0, "#ffd089");
+      g.addColorStop(0.4, "#f08a24");
+      g.addColorStop(1, "#b8550a");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, 0, R, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(160,70,10,0.25)";
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 18; i++) {
+        const a = (i / 18) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.arc(
+          Math.cos(a) * R * 0.35,
+          Math.sin(a) * R * 0.35,
+          R * 0.08,
+          0,
+          Math.PI * 2
+        );
+        ctx.stroke();
+      }
+      ctx.fillStyle = "rgba(255,255,255,0.28)";
+      ctx.beginPath();
+      ctx.ellipse(-R * 0.28, -R * 0.3, R * 0.16, R * 0.22, -0.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#2f6b28";
+      ctx.beginPath();
+      ctx.arc(0, -R * 0.92, R * 0.1, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (t.fruit === "strawberry") {
+      const g = ctx.createRadialGradient(-R * 0.2, -R * 0.15, 2, 0, R * 0.1, R);
+      g.addColorStop(0, "#ff6b6b");
+      g.addColorStop(0.45, "#e0233a");
+      g.addColorStop(1, "#8f1020");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(0, -R * 0.55);
+      ctx.bezierCurveTo(R * 0.95, -R * 0.35, R * 0.85, R * 0.55, 0, R);
+      ctx.bezierCurveTo(-R * 0.85, R * 0.55, -R * 0.95, -R * 0.35, 0, -R * 0.55);
+      ctx.fill();
+      ctx.fillStyle = "#f0c14a";
+      for (let i = 0; i < 12; i++) {
+        const px = Math.sin(i * 1.7) * R * 0.45;
+        const py = -R * 0.15 + (i % 4) * R * 0.28;
+        ctx.beginPath();
+        ctx.ellipse(px, py, R * 0.06, R * 0.09, 0.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = "#3f8f3a";
       for (let i = -2; i <= 2; i++) {
         ctx.beginPath();
-        ctx.arc(0, 0, t.r * 0.75, -0.4 + i * 0.15, 0.4 + i * 0.15);
-        ctx.stroke();
+        ctx.ellipse(i * R * 0.16, -R * 0.72, R * 0.16, R * 0.22, i * 0.25, 0, Math.PI * 2);
+        ctx.fill();
       }
-      ctx.fillStyle = t.accent;
-      ctx.beginPath();
-      ctx.moveTo(-t.r, 0);
-      ctx.arc(0, 0, t.r, Math.PI * 0.15, Math.PI * 0.85);
-      ctx.closePath();
-      ctx.globalAlpha = 0.85;
-      ctx.fill();
-      ctx.globalAlpha = 1;
-    } else {
-      const g = ctx.createRadialGradient(-t.r * 0.35, -t.r * 0.35, 3, 0, 0, t.r);
-      g.addColorStop(0, "#fff8");
-      g.addColorStop(0.25, t.color);
-      g.addColorStop(1, t.accent);
+    } else if (t.fruit === "watermelon") {
+      const g = ctx.createRadialGradient(-R * 0.25, -R * 0.25, 4, 0, 0, R);
+      g.addColorStop(0, "#7fd99a");
+      g.addColorStop(0.45, "#2f9e57");
+      g.addColorStop(1, "#145c2e");
       ctx.fillStyle = g;
       ctx.beginPath();
-      ctx.arc(0, 0, t.r, 0, Math.PI * 2);
+      ctx.arc(0, 0, R, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = "rgba(0,0,0,0.12)";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      if (t.leaf) {
-        ctx.fillStyle = t.leaf;
+      ctx.strokeStyle = "rgba(255,255,255,0.22)";
+      ctx.lineWidth = 3;
+      for (let i = -3; i <= 3; i++) {
         ctx.beginPath();
-        ctx.ellipse(t.r * 0.1, -t.r * 0.9, t.r * 0.38, t.r * 0.18, -0.6, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "#2d5c28";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(0, -t.r * 0.75);
-        ctx.lineTo(0, -t.r * 1.05);
+        ctx.arc(0, 0, R * 0.82, -0.55 + i * 0.12, 0.55 + i * 0.12);
         ctx.stroke();
       }
-      if (t.fruit === "orange") {
-        ctx.strokeStyle = "rgba(255,255,255,0.25)";
-        ctx.lineWidth = 1.5;
-        for (let i = 0; i < 5; i++) {
-          const a = (i / 5) * Math.PI * 2;
-          ctx.beginPath();
-          ctx.moveTo(0, 0);
-          ctx.lineTo(Math.cos(a) * t.r * 0.85, Math.sin(a) * t.r * 0.85);
-          ctx.stroke();
-        }
+      ctx.fillStyle = "#d64545";
+      ctx.beginPath();
+      ctx.moveTo(-R * 0.15, -R);
+      ctx.arc(0, 0, R, -Math.PI * 0.55, Math.PI * 0.55);
+      ctx.closePath();
+      ctx.globalAlpha = 0.9;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "#fff5f5";
+      ctx.beginPath();
+      ctx.moveTo(-R * 0.05, -R * 0.85);
+      ctx.arc(0, 0, R * 0.78, -Math.PI * 0.5, Math.PI * 0.5);
+      ctx.closePath();
+      ctx.globalAlpha = 0.35;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "#1a1a1a";
+      for (let i = 0; i < 7; i++) {
+        const a = -0.4 + i * 0.14;
+        ctx.beginPath();
+        ctx.ellipse(Math.cos(a) * R * 0.45, Math.sin(a) * R * 0.45, 2.2, 3.5, a, 0, Math.PI * 2);
+        ctx.fill();
       }
+    } else if (t.fruit === "peach") {
+      const g = ctx.createRadialGradient(-R * 0.3, -R * 0.35, 3, R * 0.1, R * 0.1, R);
+      g.addColorStop(0, "#ffe0b8");
+      g.addColorStop(0.4, "#ff9a6b");
+      g.addColorStop(0.75, "#f06a4a");
+      g.addColorStop(1, "#c4452e");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(-R * 0.08, 0, R * 0.82, R * 0.9, -0.1, 0, Math.PI * 2);
+      ctx.ellipse(R * 0.2, 0, R * 0.7, R * 0.86, 0.12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(140,50,30,0.35)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, -R * 0.75);
+      ctx.quadraticCurveTo(R * 0.05, 0, 0, R * 0.78);
+      ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,0.3)";
+      ctx.beginPath();
+      ctx.ellipse(-R * 0.3, -R * 0.28, R * 0.16, R * 0.24, -0.45, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#4f8a3a";
+      ctx.beginPath();
+      ctx.ellipse(R * 0.1, -R * 0.9, R * 0.28, R * 0.12, -0.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#5a3a1a";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, -R * 0.7);
+      ctx.lineTo(0, -R * 0.95);
+      ctx.stroke();
+    } else if (t.fruit === "grape") {
+      const berries = [
+        [0, 0],
+        [-0.45, 0.15],
+        [0.45, 0.15],
+        [-0.25, 0.55],
+        [0.25, 0.55],
+        [0, 0.85],
+        [-0.55, -0.25],
+        [0.55, -0.25],
+        [-0.2, -0.45],
+        [0.2, -0.4],
+      ];
+      for (const [bx, by] of berries) {
+        const cx = bx * R * 0.7;
+        const cy = by * R * 0.55 - R * 0.15;
+        const g = ctx.createRadialGradient(cx - 3, cy - 3, 1, cx, cy, R * 0.32);
+        g.addColorStop(0, "#c9a0ff");
+        g.addColorStop(0.45, "#7b5ea7");
+        g.addColorStop(1, "#3d2a5c");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(cx, cy, R * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,0.3)";
+        ctx.beginPath();
+        ctx.arc(cx - R * 0.1, cy - R * 0.1, R * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.strokeStyle = "#3f8f3a";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, -R * 0.7);
+      ctx.lineTo(0, -R * 1.05);
+      ctx.stroke();
+      ctx.fillStyle = "#4f8a3a";
+      ctx.beginPath();
+      ctx.ellipse(R * 0.15, -R * 0.95, R * 0.28, R * 0.12, -0.5, 0, Math.PI * 2);
+      ctx.fill();
     }
     ctx.restore();
   }
@@ -1004,10 +1558,6 @@
       ctx.beginPath();
       ctx.ellipse(0, R * 0.12, R * 0.7, R * 0.18, 0, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.fillStyle = "rgba(255,255,255,0.8)";
-      ctx.font = `bold ${Math.floor(R * 0.22)}px SpaceGrotesk, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.fillText("MOTHERSHIP", 0, R * 0.18);
     }
 
     if (t.flash > 0) {
@@ -1057,14 +1607,125 @@
     ctx.restore();
   }
 
+  function drawSun(ctx, t) {
+    ctx.save();
+    ctx.translate(t.x, t.y);
+    const pulse = 1 + Math.sin(t.pulse || 0) * 0.04;
+    ctx.scale(pulse, pulse);
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      ctx.strokeStyle = "rgba(255, 210, 90, 0.55)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a) * (t.r + 4), Math.sin(a) * (t.r + 4));
+      ctx.lineTo(Math.cos(a) * (t.r + 16), Math.sin(a) * (t.r + 16));
+      ctx.stroke();
+    }
+    const g = ctx.createRadialGradient(-8, -8, 4, 0, 0, t.r);
+    g.addColorStop(0, "#fff6c8");
+    g.addColorStop(0.45, "#ffd056");
+    g.addColorStop(1, "#f08a1a");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, t.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.45)";
+    ctx.beginPath();
+    ctx.arc(-t.r * 0.28, -t.r * 0.28, t.r * 0.22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawFlyby(ctx, t) {
+    ctx.save();
+    ctx.translate(t.x, t.y);
+    if (t.kind === "blimp") {
+      ctx.scale(t.facing || 1, 1);
+      const g = ctx.createLinearGradient(0, -18, 0, 18);
+      g.addColorStop(0, "#f7f2e8");
+      g.addColorStop(1, "#c9b896");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 36, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#e44747";
+      ctx.fillRect(-10, -6, 20, 12);
+      ctx.fillStyle = "#5a5044";
+      ctx.fillRect(-8, 14, 16, 8);
+      ctx.strokeStyle = "rgba(40,40,40,0.35)";
+      ctx.beginPath();
+      ctx.moveTo(-8, 14);
+      ctx.lineTo(-18, 4);
+      ctx.moveTo(8, 14);
+      ctx.lineTo(18, 4);
+      ctx.stroke();
+    } else if (t.kind === "rocket") {
+      for (const p of t.trail || []) {
+        ctx.globalAlpha = p.life * 0.5;
+        ctx.fillStyle = "#ff9a4a";
+        ctx.beginPath();
+        ctx.arc(p.x - t.x, p.y - t.y, 5 * p.life, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillStyle = "#e8eef4";
+      ctx.beginPath();
+      ctx.moveTo(0, -18);
+      ctx.lineTo(10, 10);
+      ctx.lineTo(-10, 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#e44747";
+      ctx.beginPath();
+      ctx.moveTo(-10, 10);
+      ctx.lineTo(-16, 18);
+      ctx.lineTo(-4, 10);
+      ctx.moveTo(10, 10);
+      ctx.lineTo(16, 18);
+      ctx.lineTo(4, 10);
+      ctx.fill();
+      ctx.fillStyle = "#ffd056";
+      ctx.beginPath();
+      ctx.moveTo(-5, 10);
+      ctx.lineTo(0, 22);
+      ctx.lineTo(5, 10);
+      ctx.fill();
+    } else if (t.kind === "kite") {
+      ctx.fillStyle = t.color || "#e44747";
+      ctx.beginPath();
+      ctx.moveTo(0, -16);
+      ctx.lineTo(14, 0);
+      ctx.lineTo(0, 16);
+      ctx.lineTo(-14, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.5)";
+      ctx.beginPath();
+      ctx.moveTo(0, -16);
+      ctx.lineTo(0, 16);
+      ctx.moveTo(-14, 0);
+      ctx.lineTo(14, 0);
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(40,40,40,0.35)";
+      ctx.beginPath();
+      ctx.moveTo(0, 16);
+      ctx.quadraticCurveTo(10, 34, 4, 48);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   function drawTarget(ctx, t) {
     if (t.type === "balloon") drawBalloon(ctx, t);
     else if (t.type === "target") drawBullseye(ctx, t);
     else if (t.type === "can") drawCan(ctx, t);
     else if (t.type === "fruit") drawFruit(ctx, t);
-    else if (t.type === "saucer") drawSaucer(ctx, t, false);
+    else if (t.type === "saucer" || t.type === "miniufo") drawSaucer(ctx, t, false);
     else if (t.type === "boss") drawSaucer(ctx, t, true);
     else if (t.type === "meteor") drawMeteor(ctx, t);
+    else if (t.type === "flyby") drawFlyby(ctx, t);
+    else if (t.type === "sun") drawSun(ctx, t);
   }
 
   function drawFx(ctx) {
@@ -1231,7 +1892,7 @@
     state.mode = "idle";
     state.best = loadBest();
     resetRun();
-    state.targets = [];
+    buildStars();
     setOverlay(true, {
       kicker: "Arcade",
       title: "Zap Gallery",
@@ -1240,8 +1901,12 @@
     });
     updateHud();
     resize();
+    seedTitleDemo();
     requestAnimationFrame(() => {
-      if (state.active) resize();
+      if (state.active) {
+        resize();
+        if (state.mode === "idle" && state.targets.length === 0) seedTitleDemo();
+      }
     });
     cancelAnimationFrame(state.raf);
     state.last = 0;
@@ -1280,7 +1945,7 @@
       score: document.querySelector("[data-zap-score]"),
       best: document.querySelector("[data-zap-best]"),
       combo: document.querySelector("[data-zap-combo]"),
-      wave: document.querySelector("[data-zap-wave]"),
+      time: document.querySelector("[data-zap-time]"),
       bossWrap: document.querySelector("[data-zap-boss]"),
       bossFill: document.querySelector("[data-zap-boss-fill]"),
       overlay: document.querySelector("[data-zap-overlay]"),
@@ -1297,6 +1962,9 @@
     state.els.start?.addEventListener("click", (e) => {
       e.stopPropagation();
       startGame();
+    });
+    state.els.overlay?.addEventListener("click", () => {
+      if (state.mode === "idle" || state.mode === "dead") startGame();
     });
 
     canvas.addEventListener("pointerdown", onPointerDown);
