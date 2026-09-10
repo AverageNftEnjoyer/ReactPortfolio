@@ -156,7 +156,7 @@
     if (!overlay) return;
     overlay.hidden = !visible;
     if (kicker) kicker.textContent = opts.kicker ?? "Arcade";
-    if (title) title.textContent = opts.title ?? "Zap Gallery";
+    if (title) title.textContent = opts.title ?? "Quick Break";
     if (hint)
       hint.textContent =
         opts.hint ??
@@ -1958,7 +1958,7 @@
     buildStars();
     setOverlay(true, {
       kicker: "Arcade",
-      title: "Zap Gallery",
+      title: "Quick Break",
       hint: "Skill run: sparse targets, combo multipliers, then a teleporting boss.",
       cta: "Play",
     });
@@ -1991,7 +1991,7 @@
     setAiming(false);
     setOverlay(true, {
       kicker: "Arcade",
-      title: "Zap Gallery",
+      title: "Quick Break",
       hint: "Skill run: sparse targets, combo multipliers, then a teleporting boss.",
       cta: "Play",
     });

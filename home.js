@@ -39,8 +39,8 @@ const CHANNEL_META = {
   },
   arcade: {
     kicker: "play",
-    title: "Zap Gallery",
-    dock: "Zap Gallery",
+    title: "Quick Break",
+    dock: "Quick Break",
   },
 };
 
