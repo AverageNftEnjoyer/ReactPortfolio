@@ -1,3 +1,11 @@
+const CERTIFICATE_ASSETS = {
+  "az-900": new URL("./assets/AZ-900.jpg", import.meta.url).href,
+  "ai-900": new URL("./assets/AI-900.jpg", import.meta.url).href,
+  databricks: new URL("./assets/databricks.webp", import.meta.url).href,
+  business: new URL("./assets/busicness.jpg", import.meta.url).href,
+  "yellow-belt": new URL("./assets/yellow.png", import.meta.url).href,
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   if ("paintWorklet" in CSS) {
     CSS.paintWorklet.addModule("squircle.js");
@@ -17,8 +25,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initClickSound();
   initChannelPopup();
+  initCertificationLinks();
   initMailLinks();
 });
+
+function initCertificationLinks() {
+  document.querySelectorAll("[data-cert-id]").forEach((link) => {
+    const assetUrl = CERTIFICATE_ASSETS[link.dataset.certId];
+    if (assetUrl) link.href = assetUrl;
+  });
+}
 
 function initMailLinks() {
   document.querySelectorAll("[data-mail-link], a[href^='mailto:']").forEach((link) => {
@@ -64,7 +80,7 @@ const CHANNEL_META = {
   certs: {
     kicker: "credentials",
     title: "Certifications",
-    dock: "Certifications",
+    dock: "",
   },
   arcade: {
     kicker: "play",

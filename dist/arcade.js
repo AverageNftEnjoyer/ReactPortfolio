@@ -28,6 +28,84 @@
     miniufo: 4,
   };
 
+  // One is picked at random each time the arcade loads (activate()); stays fixed
+  // for the whole session (retries included) so the scene doesn't jump mid-play.
+  const BACKGROUND_THEMES = [
+    {
+      id: "meadow",
+      sky: {
+        day: [[106, 169, 212], [169, 208, 230], [207, 227, 181], [181, 201, 138]],
+        night: [[12, 18, 42], [24, 36, 72], [34, 48, 70], [28, 42, 48]],
+      },
+      hillFar: { day: [143, 181, 110], night: [61, 90, 58] },
+      hillNear: { day: [122, 159, 92], night: [47, 74, 46] },
+      moon: "#f2f0de",
+      particle: { type: "star", mode: "night-only", color: "#fff8e8" },
+    },
+    {
+      id: "aurora",
+      sky: {
+        day: [[120, 150, 196], [158, 182, 210], [196, 205, 196], [176, 190, 160]],
+        night: [[8, 10, 28], [18, 22, 48], [28, 26, 54], [22, 22, 38]],
+      },
+      hillFar: { day: [128, 140, 150], night: [30, 34, 58] },
+      hillNear: { day: [104, 116, 128], night: [20, 22, 42] },
+      moon: "#e7e6ff",
+      particle: { type: "star", mode: "night-only", color: "#e9e6ff" },
+    },
+    {
+      id: "retro",
+      sky: {
+        day: [[255, 145, 170], [255, 120, 150], [255, 150, 90], [120, 40, 120]],
+        night: [[40, 10, 60], [70, 15, 90], [90, 20, 90], [20, 10, 40]],
+      },
+      ground: { day: [40, 20, 60], night: [10, 6, 26] },
+      gridColorA: "#ff5fd6",
+      gridColorB: "#3ff0ff",
+      sunColor: { day: "#ffd35e", night: "#ff6fd8" },
+      particle: { type: "glint", mode: "always", color: "#ffe9fb" },
+    },
+    {
+      id: "autumn",
+      sky: {
+        day: [[214, 150, 96], [230, 178, 120], [224, 176, 110], [168, 104, 58]],
+        night: [[30, 20, 26], [52, 32, 34], [46, 32, 30], [30, 22, 20]],
+      },
+      hillFar: { day: [176, 110, 58], night: [64, 42, 34] },
+      hillNear: { day: [140, 80, 42], night: [46, 30, 26] },
+      moon: "#f2d9b8",
+      particle: {
+        type: "leaf",
+        mode: "always",
+        colors: ["#d9612b", "#e8963a", "#c94f2d", "#efb84a"],
+      },
+    },
+    {
+      id: "winter",
+      sky: {
+        day: [[176, 205, 224], [200, 220, 232], [220, 228, 224], [186, 198, 196]],
+        night: [[10, 16, 34], [20, 28, 54], [30, 38, 56], [26, 34, 44]],
+      },
+      hillFar: { day: [206, 214, 222], night: [58, 70, 92] },
+      hillNear: { day: [180, 192, 206], night: [40, 50, 70] },
+      snowCap: true,
+      moon: "#eef3fb",
+      particle: { type: "snow", mode: "always", color: "#ffffff" },
+    },
+  ];
+
+  const HILL_FAR_PATH = { startY: 0.74, c1x: 0.28, c1y: 0.64, midX: 0.52, midY: 0.72, c2x: 0.78, c2y: 0.8, endY: 0.68 };
+  const HILL_NEAR_PATH = { startY: 0.84, c1x: 0.33, c1y: 0.76, midX: 0.58, midY: 0.86, c2x: 0.82, c2y: 0.92, endY: 0.82 };
+
+  const mixColor = (a, b, t) => [
+    a[0] + (b[0] - a[0]) * t,
+    a[1] + (b[1] - a[1]) * t,
+    a[2] + (b[2] - a[2]) * t,
+  ];
+  const rgbStr = (c) => `rgb(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])})`;
+
+  let lastThemeId = null;
+
   const state = {
     active: false,
     mode: "idle",
@@ -47,8 +125,11 @@
     boss: null,
     night: false,
     nightBlend: 0,
-    stars: [],
+    bgTheme: null,
+    particles: [],
     sunSpawned: false,
+    forceBoss: false,
+    demoAcc: 0,
     saucerWave: {
       index: 0,
       stage: "idle", // idle | active | exiting | gap | done
@@ -67,8 +148,12 @@
   const rand = (a, b) => a + Math.random() * (b - a);
   const pick = (arr) => arr[(Math.random() * arr.length) | 0];
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const randIn = (a, b, fallback) => (b > a ? rand(a, b) : fallback);
+  const fieldX = () => clamp(state.w / 900, 0.62, 1.2);
+  const fieldY = () => clamp(state.h / 640, 0.62, 1.2);
 
   function phaseAt(t) {
+    if (state.forceBoss || state.boss) return PHASES[PHASES.length - 1];
     return PHASES.find((p) => t < p.until) || PHASES[PHASES.length - 1];
   }
 
@@ -150,7 +235,7 @@
     if (!overlay) return;
     overlay.hidden = !visible;
     if (kicker) kicker.textContent = opts.kicker ?? "Arcade";
-    if (title) title.textContent = opts.title ?? "Zap Gallery";
+    if (title) title.textContent = opts.title ?? "Quick Break";
     if (hint)
       hint.textContent =
         opts.hint ??
@@ -234,23 +319,56 @@
     state.night = false;
     state.nightBlend = 0;
     state.sunSpawned = false;
+    state.forceBoss = false;
+    state.demoAcc = 0;
     state.saucerWave = { index: 0, stage: "idle", timer: 0 };
     state._lastBalloonColor = null;
-    buildStars();
+    buildParticles();
     updateHud();
   }
 
-  function buildStars() {
-    state.stars = Array.from({ length: 70 }, () => ({
+  function pickBackgroundTheme() {
+    const choices =
+      lastThemeId && BACKGROUND_THEMES.length > 1
+        ? BACKGROUND_THEMES.filter((t) => t.id !== lastThemeId)
+        : BACKGROUND_THEMES;
+    const theme = pick(choices);
+    state.bgTheme = theme;
+    lastThemeId = theme.id;
+  }
+
+  function buildParticles() {
+    const theme = state.bgTheme || BACKGROUND_THEMES[0];
+    const kind = theme.particle.type;
+    const count = kind === "leaf" ? 22 : kind === "snow" ? 60 : kind === "glint" ? 40 : 70;
+    state.particles = Array.from({ length: count }, () => ({
       x: Math.random(),
-      y: Math.random() * 0.72,
-      r: rand(0.6, 2.2),
+      y: Math.random() * (kind === "star" ? 0.72 : 1),
+      r: kind === "leaf" ? rand(3, 6) : kind === "snow" ? rand(1.4, 3.2) : rand(0.6, 2.2),
       tw: rand(0, Math.PI * 2),
       sp: rand(0.002, 0.006),
+      sway: rand(0.3, 1),
+      rot: rand(0, Math.PI * 2),
+      rotSp: rand(-0.0006, 0.0006),
+      fall: kind === "snow" ? rand(0.00006, 0.00016) : kind === "leaf" ? rand(0.00008, 0.00018) : 0,
+      color: theme.particle.colors ? pick(theme.particle.colors) : theme.particle.color,
     }));
   }
 
+  function updateParticles(dt) {
+    for (const p of state.particles) {
+      if (!p.fall) continue;
+      p.y += p.fall * dt;
+      p.rot += p.rotSp * dt;
+      if (p.y > 1.05) {
+        p.y = -0.05;
+        p.x = Math.random();
+      }
+    }
+  }
+
   function startGame() {
+    if (state.mode === "playing") return;
     resetRun();
     state.mode = "playing";
     setOverlay(false);
@@ -264,32 +382,38 @@
     if (countType("balloon") >= CAPS.balloon) return;
     const colors = ["#e44747", "#2eb0e0", "#efc233"];
     const color = pick(colors);
-    const r = 24 * difficulty().size * rand(0.95, 1.1);
+    const r = 24 * difficulty().size * rand(0.95, 1.1) * fieldY();
     const margin = r + 10;
+    const xMin = margin;
+    const xMax = state.w - margin;
     state.targets.push({
       type: "balloon",
-      x: rand(margin, state.w - margin),
-      y: state.h - margin - rand(10, 80),
+      x: randIn(xMin, xMax, state.w * 0.5),
+      y: clamp(state.h - margin - rand(8, Math.min(70, state.h * 0.12)), margin, state.h - margin),
       r,
       color,
-      vy: -rand(1.15, 1.7) * difficulty().speed,
-      vx: rand(-0.55, 0.55),
+      vy: -rand(1.15, 1.7) * difficulty().speed * fieldY(),
+      vx: rand(-0.45, 0.45) * fieldX(),
       wobble: rand(0, Math.PI * 2),
       points: 1,
       hitR: r * 0.88,
     });
   }
 
-  function spawnBullseye() {
+  function spawnBullseye(opts = {}) {
     if (countType("target") >= CAPS.target) return;
-    const gold = Math.random() < 0.14;
-    const penalty = !gold && Math.random() < 0.1;
-    const r = (gold ? 36 : 32) * difficulty().size * rand(0.9, 1.05);
+    const gold = opts.gold ?? Math.random() < 0.14;
+    const penalty = opts.penalty ?? (!gold && Math.random() < 0.1);
+    const r = (gold ? 36 : 32) * difficulty().size * rand(0.9, 1.05) * clamp(fieldY(), 0.75, 1.1);
     const life = rand(2400, 3600) / difficulty().speed;
+    const xMin = r + 28;
+    const xMax = state.w - r - 28;
+    const yMin = r + 72;
+    const yMax = state.h - r - 46;
     state.targets.push({
       type: "target",
-      x: rand(r + 36, state.w - r - 36),
-      y: rand(r + 90, state.h - r - 50),
+      x: randIn(xMin, xMax, state.w * 0.5),
+      y: randIn(yMin, yMax, state.h * 0.42),
       r,
       maxR: r,
       life,
@@ -302,18 +426,27 @@
     });
   }
 
+  function tossSpeed(peakFrac, base) {
+    const peak = state.h * peakFrac;
+    const need = Math.sqrt(Math.max(36, peak * 0.4));
+    return base * clamp(need / 9.2, 0.68, 1.3) * difficulty().speed;
+  }
+
   function spawnCan() {
     if (countType("can") >= CAPS.can) return;
     const fromLeft = Math.random() < 0.5;
-    const r = 20 * difficulty().size;
+    const r = 20 * difficulty().size * clamp(fieldY(), 0.75, 1.1);
     const hp = 1 + ((Math.random() * 5) | 0);
+    const inset = Math.min(state.w * 0.22, 120);
     state.targets.push({
       type: "can",
-      x: fromLeft ? rand(50, state.w * 0.35) : rand(state.w * 0.65, state.w - 50),
-      y: state.h - 40,
+      x: fromLeft
+        ? randIn(36, inset + 20, state.w * 0.22)
+        : randIn(state.w - inset - 20, state.w - 36, state.w * 0.78),
+      y: state.h - 28,
       r,
-      vx: (fromLeft ? 1 : -1) * rand(0.6, 1.3) * difficulty().speed,
-      vy: -rand(6.5, 8.8) * difficulty().speed,
+      vx: (fromLeft ? 1 : -1) * rand(0.55, 1.15) * difficulty().speed * fieldX(),
+      vy: -tossSpeed(0.46, rand(6.5, 8.8)),
       g: 0.2,
       rot: rand(-0.2, 0.2),
       spin: rand(-0.08, 0.08),
@@ -338,15 +471,18 @@
     ];
     const kind = pick(kinds);
     const fromLeft = Math.random() < 0.5;
-    const r = 34 * difficulty().size * rand(0.95, 1.12);
+    const r = 34 * difficulty().size * rand(0.95, 1.12) * clamp(fieldY(), 0.72, 1.08);
+    const inset = Math.min(state.w * 0.2, 130);
     state.targets.push({
       type: "fruit",
       fruit: kind.name,
-      x: fromLeft ? rand(60, 140) : rand(state.w - 140, state.w - 60),
-      y: state.h + 10,
+      x: fromLeft
+        ? randIn(40, inset + 24, state.w * 0.2)
+        : randIn(state.w - inset - 24, state.w - 40, state.w * 0.8),
+      y: state.h + 8,
       r,
-      vx: (fromLeft ? 1 : -1) * rand(1.4, 2.4) * difficulty().speed,
-      vy: -rand(8.2, 10.2) * difficulty().speed,
+      vx: (fromLeft ? 1 : -1) * rand(1.1, 1.9) * difficulty().speed * fieldX(),
+      vy: -tossSpeed(0.5, rand(8.2, 10.2)),
       g: 0.2,
       rot: rand(0, Math.PI * 2),
       spin: rand(-0.08, 0.08),
@@ -356,7 +492,7 @@
   }
 
   function spawnSaucerAt(x, y, opts = {}) {
-    const r = 28 * difficulty().size * (opts.scale || 1);
+    const r = 28 * difficulty().size * (opts.scale || 1) * clamp(fieldY(), 0.72, 1.08);
     const gold = opts.gold ?? Math.random() < 0.12;
     state.targets.push({
       type: "saucer",
@@ -378,11 +514,14 @@
   function spawnSaucerWave(count) {
     // clear leftovers
     state.targets = state.targets.filter((t) => t.type !== "saucer");
+    const cols = Math.min(5, count);
+    const rowGap = Math.min(70, state.h * 0.13);
+    const y0 = clamp(state.h * 0.14, 52, 86);
     for (let i = 0; i < count; i++) {
-      const col = (i % Math.min(5, count)) + 1;
-      const row = Math.floor(i / Math.min(5, count));
-      const x = (state.w / (Math.min(5, count) + 1)) * col + rand(-12, 12);
-      const y = 70 + row * 70 + rand(-8, 8);
+      const col = (i % cols) + 1;
+      const row = Math.floor(i / cols);
+      const x = clamp((state.w / (cols + 1)) * col + rand(-10, 10), 36, state.w - 36);
+      const y = clamp(y0 + row * rowGap + rand(-6, 6), 48, state.h * 0.58);
       spawnSaucerAt(x, y, { gold: count >= 10 && i === 0 });
     }
   }
@@ -391,8 +530,7 @@
     const sw = state.saucerWave;
     if (sw.index >= SAUCER_WAVES.length) {
       sw.stage = "done";
-      // push into boss ASAP
-      state.elapsed = Math.max(state.elapsed, BOSS_AT);
+      spawnBoss();
       return;
     }
     const n = SAUCER_WAVES[sw.index];
@@ -411,6 +549,65 @@
     }
     state.saucerWave.stage = "exiting";
     state.saucerWave.timer = 3500;
+  }
+
+  function completeSaucerWave(gapMs) {
+    const sw = state.saucerWave;
+    state.targets = state.targets.filter((t) => t.type !== "saucer");
+    sw.index += 1;
+    if (sw.index >= SAUCER_WAVES.length) {
+      sw.stage = "done";
+      sw.timer = 0;
+      spawnBoss();
+      return;
+    }
+    sw.stage = "gap";
+    sw.timer = gapMs;
+  }
+
+  function spawnTitleSaucer() {
+    if (countType("saucer") >= 1) return;
+    const fromLeft = Math.random() < 0.5;
+    spawnSaucerAt(
+      fromLeft ? -48 : state.w + 48,
+      rand(state.h * 0.16, state.h * 0.4),
+      { scale: 1.08, gold: false }
+    );
+    const t = state.targets[state.targets.length - 1];
+    if (!t || t.type !== "saucer") return;
+    t.vx = (fromLeft ? 1 : -1) * rand(1.4, 2.1);
+    t.vy = rand(-0.08, 0.12);
+    t.exiting = true;
+    t.beam = true;
+  }
+
+  function seedTitleDemo() {
+    state.targets = [];
+    state.fx = [];
+    state.floats = [];
+    state.demoAcc = 0;
+    if (state.w < 40) return;
+    spawnBalloon();
+    spawnBalloon();
+    spawnBullseye({ gold: false, penalty: false });
+    spawnTitleSaucer();
+  }
+
+  function tickTitleDemo(dt) {
+    state.demoAcc += dt;
+    if (countType("balloon") < 2 && Math.random() < 0.012) spawnBalloon();
+    const regular = state.targets.filter((t) => t.type === "target" && !t.gold).length;
+    const gold = state.targets.filter((t) => t.type === "target" && t.gold).length;
+    if (regular < 1 && Math.random() < 0.007) {
+      spawnBullseye({ gold: false, penalty: false });
+    }
+    if (gold < 1 && state.demoAcc > 2600 && Math.random() < 0.006) {
+      spawnBullseye({ gold: true, penalty: false });
+    }
+    if (countType("saucer") < 1 && state.demoAcc > 1100 && Math.random() < 0.006) {
+      spawnTitleSaucer();
+    }
+    updateTargets(dt * 0.55);
   }
 
   function spawnMeteor() {
@@ -516,11 +713,12 @@
 
   function spawnBoss() {
     if (state.boss) return;
+    state.forceBoss = true;
     // clear saucers
     state.targets = state.targets.filter(
       (t) => t.type !== "saucer" && t.type !== "flyby" && t.type !== "meteor"
     );
-    const r = Math.min(78, state.w * 0.11);
+    const r = Math.min(78, state.w * 0.11, state.h * 0.16);
     const boss = {
       type: "boss",
       x: state.w * 0.5,
@@ -567,9 +765,9 @@
   }
 
   function teleportBoss(boss) {
-    const m = boss.r + 30;
-    boss.x = rand(m, state.w - m);
-    boss.y = rand(m + 40, state.h * 0.55);
+    const m = boss.r + 24;
+    boss.x = randIn(m, state.w - m, state.w * 0.5);
+    boss.y = randIn(m + 36, state.h * 0.55, state.h * 0.32);
     boss.teleportIn = 1;
     boss.vx = 0;
     boss.vy = 0;
@@ -587,7 +785,7 @@
     state.targets.push({
       type: "miniufo",
       x: fromLeft ? -30 : state.w + 30,
-      y: rand(80, state.h * 0.55),
+      y: randIn(70, state.h * 0.52, state.h * 0.3),
       r,
       vx: (fromLeft ? 1 : -1) * rand(2.2, 3.6),
       vy: rand(-0.8, 0.8),
@@ -773,18 +971,20 @@
         const p = clamp(t.life / t.maxLife, 0, 1);
         t.r = t.maxR * (0.4 + 0.6 * p);
         if (t.life <= 0) dead.push(i);
-      } else if (t.type === "can") {
+      } else if (t.type === "can" || t.type === "fruit") {
         t.vy += t.g * (dt / 16.67);
         t.x += t.vx * (dt / 16.67);
         t.y += t.vy * (dt / 16.67);
         t.rot += t.spin;
-        if (t.y > state.h + 60 || t.x < -80 || t.x > state.w + 80) dead.push(i);
-      } else if (t.type === "fruit") {
-        t.vy += t.g * (dt / 16.67);
-        t.x += t.vx * (dt / 16.67);
-        t.y += t.vy * (dt / 16.67);
-        t.rot += t.spin;
-        if (t.y > state.h + 60 || t.x < -60 || t.x > state.w + 60) dead.push(i);
+        const m = t.r + 8;
+        if (t.x < m) {
+          t.x = m;
+          t.vx = Math.abs(t.vx);
+        } else if (t.x > state.w - m) {
+          t.x = state.w - m;
+          t.vx = -Math.abs(t.vx);
+        }
+        if (t.y > state.h + 70 || t.y < -90) dead.push(i);
       } else if (t.type === "saucer") {
         t.wobble += dt * 0.0035;
         if (t.exiting) {
@@ -807,8 +1007,8 @@
             t.y = m + 40;
             t.vy = Math.abs(t.vy) + 0.15;
           }
-          if (t.y > state.h * 0.7) {
-            t.y = state.h * 0.7;
+          if (t.y > state.h * 0.62) {
+            t.y = state.h * 0.62;
             t.vy = -Math.abs(t.vy) - 0.15;
           }
           if (Math.random() < 0.004) {
@@ -850,8 +1050,8 @@
       } else if (t.type === "sun") {
         t.pulse = (t.pulse || 0) + dt * 0.003;
     // keep sun parked upper-right, slight bob
-        t.x = state.w * 0.82;
-        t.y = state.h * 0.16 + Math.sin(t.pulse) * 4;
+        t.x = clamp(state.w * 0.82, t.r + 16, state.w - t.r - 16);
+        t.y = clamp(state.h * 0.16, t.r + 16, state.h * 0.3) + Math.sin(t.pulse) * 4;
       } else if (t.type === "boss") {
         t.angle += dt * 0.002;
         if (t.teleportIn > 0) t.teleportIn = Math.max(0, t.teleportIn - dt * 0.004);
@@ -908,6 +1108,7 @@
   }
 
   function tick(dt) {
+    updateParticles(dt);
     if (state.night && state.nightBlend < 1) {
       state.nightBlend = Math.min(1, state.nightBlend + dt * 0.0012);
     }
@@ -924,7 +1125,7 @@
       }
 
       if (phase === "boss") {
-        if (prevPhase !== "boss") spawnBoss();
+        if (!state.boss) spawnBoss();
         state.miniAcc += dt;
         if (state.miniAcc >= 1600) {
           state.miniAcc = 0;
@@ -936,19 +1137,15 @@
           beginSaucerWave();
         }
         sw.timer -= dt;
-        if (sw.stage === "active" && sw.timer <= 0) {
-          exitSaucerWave();
+        if (sw.stage === "active") {
+          if (countType("saucer") === 0) {
+            completeSaucerWave(180);
+          } else if (sw.timer <= 0) {
+            exitSaucerWave();
+          }
         } else if (sw.stage === "exiting") {
           if (countType("saucer") === 0 || sw.timer <= 0) {
-            state.targets = state.targets.filter((t) => t.type !== "saucer");
-            sw.index += 1;
-            if (sw.index >= SAUCER_WAVES.length) {
-              sw.stage = "done";
-              state.elapsed = Math.max(state.elapsed, BOSS_AT);
-            } else {
-              sw.stage = "gap";
-              sw.timer = 1400;
-            }
+            completeSaucerWave(240);
           }
         } else if (sw.stage === "gap" && sw.timer <= 0) {
           beginSaucerWave();
@@ -979,100 +1176,253 @@
       updateTargets(dt);
       updateHud();
     } else if (state.mode === "idle") {
-      if (countType("balloon") < 3 && Math.random() < 0.02) spawnBalloon();
-      updateTargets(dt * 0.7);
+      tickTitleDemo(dt);
+    } else if (state.mode === "dead") {
+      if (state.boss) updateTargets(dt * 0.6);
+      else tickTitleDemo(dt);
     }
 
     updateFx(dt);
   }
 
   /* —— draw —— */
+  function drawHillLayer(ctx, colorPair, night, path, snowCap) {
+    ctx.fillStyle = rgbStr(mixColor(colorPair.day, colorPair.night, night));
+    ctx.beginPath();
+    ctx.moveTo(0, state.h * path.startY);
+    ctx.quadraticCurveTo(state.w * path.c1x, state.h * path.c1y, state.w * path.midX, state.h * path.midY);
+    ctx.quadraticCurveTo(state.w * path.c2x, state.h * path.c2y, state.w, state.h * path.endY);
+    ctx.lineTo(state.w, state.h);
+    ctx.lineTo(0, state.h);
+    ctx.fill();
+    if (snowCap) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,255,255,0.8)";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(0, state.h * path.startY);
+      ctx.quadraticCurveTo(state.w * path.c1x, state.h * path.c1y, state.w * path.midX, state.h * path.midY);
+      ctx.quadraticCurveTo(state.w * path.c2x, state.h * path.c2y, state.w, state.h * path.endY);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  function drawClouds(ctx, night) {
+    if (night >= 0.85) return;
+    ctx.save();
+    ctx.globalAlpha = 1 - night * 0.9;
+    ctx.fillStyle = "rgba(255,255,255,0.42)";
+    const drift = (state.elapsed * 0.008) % (state.w + 200);
+    [
+      [100, 64, 36],
+      [340, 92, 28],
+      [580, 50, 44],
+      [820, 84, 26],
+    ].forEach(([cx, cy, r], i) => {
+      const x = ((cx - drift * (0.25 + i * 0.04)) % (state.w + 160)) - 80;
+      ctx.beginPath();
+      ctx.arc(x, cy, r, 0, Math.PI * 2);
+      ctx.arc(x + r * 0.7, cy + 5, r * 0.65, 0, Math.PI * 2);
+      ctx.arc(x - r * 0.55, cy + 6, r * 0.55, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  function drawSkyBirds(ctx, night) {
+    if (night >= 0.85) return;
+    ctx.save();
+    ctx.globalAlpha = (1 - night * 0.9) * 0.55;
+    ctx.strokeStyle = "rgba(30,30,40,0.6)";
+    ctx.lineWidth = 2;
+    const drift = (state.elapsed * 0.01) % (state.w + 200);
+    [
+      [0.12, 0.14, 1],
+      [0.2, 0.1, 0.7],
+      [0.62, 0.2, 1.15],
+      [0.7, 0.16, 0.8],
+    ].forEach(([fx, fy, scale], i) => {
+      const x = ((fx * state.w + drift * (0.3 + i * 0.05)) % (state.w + 120)) - 60;
+      const y = state.h * fy + Math.sin(state.elapsed * 0.001 + i) * 6;
+      const s = 7 * scale;
+      ctx.beginPath();
+      ctx.moveTo(x - s, y);
+      ctx.quadraticCurveTo(x - s * 0.4, y - s * 0.6, x, y);
+      ctx.quadraticCurveTo(x + s * 0.4, y - s * 0.6, x + s, y);
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  function drawAuroraRibbons(ctx, night) {
+    if (night <= 0.05) return;
+    ctx.save();
+    ctx.globalAlpha = night;
+    const bands = [
+      { color: "rgba(120,255,180,0.32)", amp: 26, freq: 0.012, yBase: 0.14, speed: 0.00018 },
+      { color: "rgba(160,120,255,0.26)", amp: 34, freq: 0.009, yBase: 0.2, speed: -0.00014 },
+      { color: "rgba(120,200,255,0.2)", amp: 20, freq: 0.015, yBase: 0.1, speed: 0.00022 },
+    ];
+    for (const b of bands) {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      for (let x = 0; x <= state.w; x += 24) {
+        const y = state.h * b.yBase + Math.sin(x * b.freq + state.elapsed * b.speed) * b.amp;
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(state.w, 0);
+      ctx.closePath();
+      ctx.fillStyle = b.color;
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawRetroSunDisc(ctx, theme, night) {
+    const cx = state.w * 0.5;
+    const cy = state.h * 0.56;
+    const r = Math.min(state.w, state.h) * 0.24;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.fillStyle = night > 0.5 ? theme.sunColor.night : theme.sunColor.day;
+    ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+    ctx.fillStyle = "rgba(40,10,50,0.35)";
+    for (let i = 0; i < 6; i++) {
+      const y = cy - r + r * 0.32 + i * (r * 0.32);
+      ctx.fillRect(cx - r, y, r * 2, r * 0.08);
+    }
+    ctx.restore();
+  }
+
+  function drawRetroGrid(ctx, theme, night) {
+    const groundTop = state.h * 0.6;
+    const g = ctx.createLinearGradient(0, groundTop, 0, state.h);
+    g.addColorStop(0, rgbStr(mixColor(theme.ground.day, theme.ground.night, night)));
+    g.addColorStop(1, "#05030a");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, groundTop, state.w, state.h - groundTop);
+
+    ctx.save();
+    ctx.globalAlpha = 0.55;
+    ctx.strokeStyle = theme.gridColorA;
+    ctx.lineWidth = 1.5;
+    const vanishX = state.w * 0.5;
+    const cols = 10;
+    for (let i = 0; i <= cols; i++) {
+      const t = i / cols;
+      const x = vanishX + (t - 0.5) * state.w * 1.6;
+      ctx.beginPath();
+      ctx.moveTo(vanishX, groundTop);
+      ctx.lineTo(x, state.h);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = theme.gridColorB;
+    const rows = 6;
+    for (let i = 1; i <= rows; i++) {
+      const t = i / rows;
+      const y = groundTop + (state.h - groundTop) * (t * t);
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(state.w, y);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 0.85;
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = theme.gridColorA;
+    ctx.beginPath();
+    ctx.moveTo(0, groundTop);
+    ctx.lineTo(state.w, groundTop);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawParticles(ctx, theme, night) {
+    const kind = theme.particle.type;
+    const alwaysOn = theme.particle.mode === "always";
+    if (!alwaysOn && night <= 0.05) return;
+    const baseAlpha = alwaysOn ? 1 : night;
+    ctx.save();
+    for (const p of state.particles) {
+      const sway = kind === "snow" || kind === "leaf" ? Math.sin(state.elapsed * 0.0015 * p.sway + p.tw) * 14 : 0;
+      const px = p.x * state.w + sway;
+      const py = p.y * state.h;
+      if (kind === "star" || kind === "glint") {
+        const tw = 0.4 + 0.6 * Math.abs(Math.sin(state.elapsed * p.sp + p.tw));
+        ctx.globalAlpha = baseAlpha * tw * (kind === "glint" ? 0.5 : 1);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(px, py, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (kind === "snow") {
+        ctx.globalAlpha = baseAlpha * 0.85;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(px, py, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (kind === "leaf") {
+        ctx.globalAlpha = baseAlpha * 0.9;
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.r, p.r * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+    ctx.restore();
+  }
+
   function drawBackground(ctx) {
+    const theme = state.bgTheme || BACKGROUND_THEMES[0];
     const night = state.nightBlend;
-    const dayTop = [106, 169, 212];
-    const dayMid = [169, 208, 230];
-    const dayLow = [207, 227, 181];
-    const dayBot = [181, 201, 138];
-    const nightTop = [12, 18, 42];
-    const nightMid = [24, 36, 72];
-    const nightLow = [34, 48, 70];
-    const nightBot = [28, 42, 48];
-    const mix = (a, b) =>
-      `rgb(${Math.round(a[0] + (b[0] - a[0]) * night)},${Math.round(
-        a[1] + (b[1] - a[1]) * night
-      )},${Math.round(a[2] + (b[2] - a[2]) * night)})`;
+    const [dTop, dMid, dLow, dBot] = theme.sky.day;
+    const [nTop, nMid, nLow, nBot] = theme.sky.night;
 
     const g = ctx.createLinearGradient(0, 0, 0, state.h);
-    g.addColorStop(0, mix(dayTop, nightTop));
-    g.addColorStop(0.42, mix(dayMid, nightMid));
-    g.addColorStop(0.7, mix(dayLow, nightLow));
-    g.addColorStop(1, mix(dayBot, nightBot));
+    g.addColorStop(0, rgbStr(mixColor(dTop, nTop, night)));
+    g.addColorStop(0.42, rgbStr(mixColor(dMid, nMid, night)));
+    g.addColorStop(0.7, rgbStr(mixColor(dLow, nLow, night)));
+    g.addColorStop(1, rgbStr(mixColor(dBot, nBot, night)));
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, state.w, state.h);
 
-    if (night > 0.05) {
+    if (theme.id === "aurora") {
+      drawSkyBirds(ctx, night);
+      drawAuroraRibbons(ctx, night);
+    }
+    if (theme.id === "retro") drawRetroSunDisc(ctx, theme, night);
+
+    if (night > 0.05 && theme.id !== "retro") {
       ctx.save();
-      ctx.globalAlpha = night;
-      for (const s of state.stars) {
-        const tw = 0.45 + 0.55 * Math.abs(Math.sin(state.elapsed * s.sp + s.tw));
-        ctx.globalAlpha = night * tw;
-        ctx.fillStyle = "#fff8e8";
-        ctx.beginPath();
-        ctx.arc(s.x * state.w, s.y * state.h, s.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      // moon
       ctx.globalAlpha = night * 0.95;
       const mx = state.w * 0.18;
       const my = state.h * 0.16;
-      ctx.fillStyle = "#f2f0de";
+      ctx.fillStyle = theme.moon;
       ctx.beginPath();
       ctx.arc(mx, my, 28, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = mix(dayTop, nightTop);
+      ctx.fillStyle = rgbStr(mixColor(dTop, nTop, night));
       ctx.beginPath();
       ctx.arc(mx + 10, my - 4, 22, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     }
 
-    ctx.fillStyle = night > 0.5 ? "#3d5a3a" : "#8fb56e";
-    ctx.beginPath();
-    ctx.moveTo(0, state.h * 0.74);
-    ctx.quadraticCurveTo(state.w * 0.28, state.h * 0.64, state.w * 0.52, state.h * 0.72);
-    ctx.quadraticCurveTo(state.w * 0.78, state.h * 0.8, state.w, state.h * 0.68);
-    ctx.lineTo(state.w, state.h);
-    ctx.lineTo(0, state.h);
-    ctx.fill();
-
-    ctx.fillStyle = night > 0.5 ? "#2f4a2e" : "#7a9f5c";
-    ctx.beginPath();
-    ctx.moveTo(0, state.h * 0.84);
-    ctx.quadraticCurveTo(state.w * 0.33, state.h * 0.76, state.w * 0.58, state.h * 0.86);
-    ctx.quadraticCurveTo(state.w * 0.82, state.h * 0.92, state.w, state.h * 0.82);
-    ctx.lineTo(state.w, state.h);
-    ctx.lineTo(0, state.h);
-    ctx.fill();
-
-    if (night < 0.85) {
-      ctx.globalAlpha = 1 - night * 0.9;
-      ctx.fillStyle = "rgba(255,255,255,0.42)";
-      const drift = (state.elapsed * 0.008) % (state.w + 200);
-      [
-        [100, 64, 36],
-        [340, 92, 28],
-        [580, 50, 44],
-        [820, 84, 26],
-      ].forEach(([cx, cy, r], i) => {
-        const x = ((cx - drift * (0.25 + i * 0.04)) % (state.w + 160)) - 80;
-        ctx.beginPath();
-        ctx.arc(x, cy, r, 0, Math.PI * 2);
-        ctx.arc(x + r * 0.7, cy + 5, r * 0.65, 0, Math.PI * 2);
-        ctx.arc(x - r * 0.55, cy + 6, r * 0.55, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      ctx.globalAlpha = 1;
+    if (theme.id === "retro") {
+      drawRetroGrid(ctx, theme, night);
+    } else {
+      drawHillLayer(ctx, theme.hillFar, night, HILL_FAR_PATH, theme.snowCap);
+      drawHillLayer(ctx, theme.hillNear, night, HILL_NEAR_PATH, theme.snowCap);
     }
+
+    drawParticles(ctx, theme, night);
+
+    if (theme.id === "meadow") drawClouds(ctx, night);
   }
 
   function drawBalloon(ctx, t) {
@@ -1757,12 +2107,41 @@
     state.raf = requestAnimationFrame(loop);
   }
 
+  function keepInField(t) {
+    const pad = (t.r || 16) + 8;
+    const roam =
+      t.type === "meteor" ||
+      t.type === "flyby" ||
+      t.type === "miniufo" ||
+      (t.type === "saucer" && t.exiting);
+    if (roam) {
+      t.x = clamp(t.x, -90, state.w + 90);
+      t.y = clamp(t.y, -90, state.h + 90);
+      return;
+    }
+    t.x = clamp(t.x, pad, state.w - pad);
+    if (t.type === "fruit" || t.type === "can") {
+      t.y = clamp(t.y, -40, state.h + 20);
+      return;
+    }
+    const top = pad + (t.type === "target" || t.type === "saucer" || t.type === "boss" ? 32 : 0);
+    const bottom =
+      t.type === "boss" || t.type === "saucer"
+        ? state.h * 0.62
+        : t.type === "sun"
+          ? state.h * 0.3
+          : state.h - pad;
+    t.y = clamp(t.y, top, Math.max(top + 10, bottom));
+  }
+
   function resize() {
     const canvas = state.canvas;
     if (!canvas) return;
     const shell = canvas.parentElement;
-    const w = Math.max(320, shell?.clientWidth || window.innerWidth);
-    const h = Math.max(280, shell?.clientHeight || window.innerHeight);
+    const prevW = state.w;
+    const prevH = state.h;
+    const w = Math.max(280, shell?.clientWidth || window.innerWidth);
+    const h = Math.max(240, shell?.clientHeight || window.innerHeight);
     state.w = w;
     state.h = h;
     state.dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -1770,6 +2149,19 @@
     canvas.height = Math.floor(h * state.dpr);
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
+    if (prevW > 40 && prevH > 40 && (prevW !== w || prevH !== h)) {
+      const sx = w / prevW;
+      const sy = h / prevH;
+      for (const t of state.targets) {
+        const oldR = t.r || 16;
+        t.x *= sx;
+        t.y *= sy;
+        if (t.r) t.r = Math.min(t.r * Math.min(sx, sy), Math.min(w, h) * 0.22);
+        if (t.maxR) t.maxR = t.r;
+        if (t.hitR) t.hitR *= (t.r || oldR) / oldR;
+        keepInField(t);
+      }
+    }
     draw();
   }
 
@@ -1823,19 +2215,22 @@
     state.active = true;
     state.mode = "idle";
     state.best = loadBest();
+    pickBackgroundTheme();
     resetRun();
-    state.targets = [];
-    buildStars();
     setOverlay(true, {
       kicker: "Arcade",
-      title: "Zap Gallery",
+      title: "Quick Break",
       hint: "Skill run: sparse targets, combo multipliers, then a teleporting boss.",
       cta: "Play",
     });
     updateHud();
     resize();
+    seedTitleDemo();
     requestAnimationFrame(() => {
-      if (state.active) resize();
+      if (state.active) {
+        resize();
+        if (state.mode === "idle" && state.targets.length === 0) seedTitleDemo();
+      }
     });
     cancelAnimationFrame(state.raf);
     state.last = 0;
@@ -1857,7 +2252,7 @@
     setAiming(false);
     setOverlay(true, {
       kicker: "Arcade",
-      title: "Zap Gallery",
+      title: "Quick Break",
       hint: "Skill run: sparse targets, combo multipliers, then a teleporting boss.",
       cta: "Play",
     });
@@ -1892,6 +2287,9 @@
       e.stopPropagation();
       startGame();
     });
+    state.els.overlay?.addEventListener("click", () => {
+      if (state.mode === "idle" || state.mode === "dead") startGame();
+    });
 
     canvas.addEventListener("pointerdown", onPointerDown);
     shell.addEventListener("pointermove", onPointerMove);
@@ -1906,6 +2304,11 @@
     window.addEventListener("resize", () => {
       if (state.active) resize();
     });
+    if (window.ResizeObserver) {
+      new ResizeObserver(() => {
+        if (state.active) resize();
+      }).observe(shell);
+    }
 
     window.ZapGallery = { activate, deactivate, isActive: () => state.active };
   }

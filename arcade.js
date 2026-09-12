@@ -28,6 +28,84 @@
     miniufo: 4,
   };
 
+  // One is picked at random each time the arcade loads (activate()); stays fixed
+  // for the whole session (retries included) so the scene doesn't jump mid-play.
+  const BACKGROUND_THEMES = [
+    {
+      id: "meadow",
+      sky: {
+        day: [[106, 169, 212], [169, 208, 230], [207, 227, 181], [181, 201, 138]],
+        night: [[12, 18, 42], [24, 36, 72], [34, 48, 70], [28, 42, 48]],
+      },
+      hillFar: { day: [143, 181, 110], night: [61, 90, 58] },
+      hillNear: { day: [122, 159, 92], night: [47, 74, 46] },
+      moon: "#f2f0de",
+      particle: { type: "star", mode: "night-only", color: "#fff8e8" },
+    },
+    {
+      id: "aurora",
+      sky: {
+        day: [[120, 150, 196], [158, 182, 210], [196, 205, 196], [176, 190, 160]],
+        night: [[8, 10, 28], [18, 22, 48], [28, 26, 54], [22, 22, 38]],
+      },
+      hillFar: { day: [128, 140, 150], night: [30, 34, 58] },
+      hillNear: { day: [104, 116, 128], night: [20, 22, 42] },
+      moon: "#e7e6ff",
+      particle: { type: "star", mode: "night-only", color: "#e9e6ff" },
+    },
+    {
+      id: "retro",
+      sky: {
+        day: [[255, 145, 170], [255, 120, 150], [255, 150, 90], [120, 40, 120]],
+        night: [[40, 10, 60], [70, 15, 90], [90, 20, 90], [20, 10, 40]],
+      },
+      ground: { day: [40, 20, 60], night: [10, 6, 26] },
+      gridColorA: "#ff5fd6",
+      gridColorB: "#3ff0ff",
+      sunColor: { day: "#ffd35e", night: "#ff6fd8" },
+      particle: { type: "glint", mode: "always", color: "#ffe9fb" },
+    },
+    {
+      id: "autumn",
+      sky: {
+        day: [[214, 150, 96], [230, 178, 120], [224, 176, 110], [168, 104, 58]],
+        night: [[30, 20, 26], [52, 32, 34], [46, 32, 30], [30, 22, 20]],
+      },
+      hillFar: { day: [176, 110, 58], night: [64, 42, 34] },
+      hillNear: { day: [140, 80, 42], night: [46, 30, 26] },
+      moon: "#f2d9b8",
+      particle: {
+        type: "leaf",
+        mode: "always",
+        colors: ["#d9612b", "#e8963a", "#c94f2d", "#efb84a"],
+      },
+    },
+    {
+      id: "winter",
+      sky: {
+        day: [[176, 205, 224], [200, 220, 232], [220, 228, 224], [186, 198, 196]],
+        night: [[10, 16, 34], [20, 28, 54], [30, 38, 56], [26, 34, 44]],
+      },
+      hillFar: { day: [206, 214, 222], night: [58, 70, 92] },
+      hillNear: { day: [180, 192, 206], night: [40, 50, 70] },
+      snowCap: true,
+      moon: "#eef3fb",
+      particle: { type: "snow", mode: "always", color: "#ffffff" },
+    },
+  ];
+
+  const HILL_FAR_PATH = { startY: 0.74, c1x: 0.28, c1y: 0.64, midX: 0.52, midY: 0.72, c2x: 0.78, c2y: 0.8, endY: 0.68 };
+  const HILL_NEAR_PATH = { startY: 0.84, c1x: 0.33, c1y: 0.76, midX: 0.58, midY: 0.86, c2x: 0.82, c2y: 0.92, endY: 0.82 };
+
+  const mixColor = (a, b, t) => [
+    a[0] + (b[0] - a[0]) * t,
+    a[1] + (b[1] - a[1]) * t,
+    a[2] + (b[2] - a[2]) * t,
+  ];
+  const rgbStr = (c) => `rgb(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])})`;
+
+  let lastThemeId = null;
+
   const state = {
     active: false,
     mode: "idle",
@@ -47,7 +125,8 @@
     boss: null,
     night: false,
     nightBlend: 0,
-    stars: [],
+    bgTheme: null,
+    particles: [],
     sunSpawned: false,
     forceBoss: false,
     demoAcc: 0,
@@ -244,18 +323,48 @@
     state.demoAcc = 0;
     state.saucerWave = { index: 0, stage: "idle", timer: 0 };
     state._lastBalloonColor = null;
-    buildStars();
+    buildParticles();
     updateHud();
   }
 
-  function buildStars() {
-    state.stars = Array.from({ length: 70 }, () => ({
+  function pickBackgroundTheme() {
+    const choices =
+      lastThemeId && BACKGROUND_THEMES.length > 1
+        ? BACKGROUND_THEMES.filter((t) => t.id !== lastThemeId)
+        : BACKGROUND_THEMES;
+    const theme = pick(choices);
+    state.bgTheme = theme;
+    lastThemeId = theme.id;
+  }
+
+  function buildParticles() {
+    const theme = state.bgTheme || BACKGROUND_THEMES[0];
+    const kind = theme.particle.type;
+    const count = kind === "leaf" ? 22 : kind === "snow" ? 60 : kind === "glint" ? 40 : 70;
+    state.particles = Array.from({ length: count }, () => ({
       x: Math.random(),
-      y: Math.random() * 0.72,
-      r: rand(0.6, 2.2),
+      y: Math.random() * (kind === "star" ? 0.72 : 1),
+      r: kind === "leaf" ? rand(3, 6) : kind === "snow" ? rand(1.4, 3.2) : rand(0.6, 2.2),
       tw: rand(0, Math.PI * 2),
       sp: rand(0.002, 0.006),
+      sway: rand(0.3, 1),
+      rot: rand(0, Math.PI * 2),
+      rotSp: rand(-0.0006, 0.0006),
+      fall: kind === "snow" ? rand(0.00006, 0.00016) : kind === "leaf" ? rand(0.00008, 0.00018) : 0,
+      color: theme.particle.colors ? pick(theme.particle.colors) : theme.particle.color,
     }));
+  }
+
+  function updateParticles(dt) {
+    for (const p of state.particles) {
+      if (!p.fall) continue;
+      p.y += p.fall * dt;
+      p.rot += p.rotSp * dt;
+      if (p.y > 1.05) {
+        p.y = -0.05;
+        p.x = Math.random();
+      }
+    }
   }
 
   function startGame() {
@@ -999,6 +1108,7 @@
   }
 
   function tick(dt) {
+    updateParticles(dt);
     if (state.night && state.nightBlend < 1) {
       state.nightBlend = Math.min(1, state.nightBlend + dt * 0.0012);
     }
@@ -1076,92 +1186,272 @@
   }
 
   /* —— draw —— */
+  function drawHillLayer(ctx, colorPair, night, path, snowCap) {
+    ctx.fillStyle = rgbStr(mixColor(colorPair.day, colorPair.night, night));
+    ctx.beginPath();
+    ctx.moveTo(0, state.h * path.startY);
+    ctx.quadraticCurveTo(state.w * path.c1x, state.h * path.c1y, state.w * path.midX, state.h * path.midY);
+    ctx.quadraticCurveTo(state.w * path.c2x, state.h * path.c2y, state.w, state.h * path.endY);
+    ctx.lineTo(state.w, state.h);
+    ctx.lineTo(0, state.h);
+    ctx.fill();
+    if (snowCap) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,255,255,0.8)";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(0, state.h * path.startY);
+      ctx.quadraticCurveTo(state.w * path.c1x, state.h * path.c1y, state.w * path.midX, state.h * path.midY);
+      ctx.quadraticCurveTo(state.w * path.c2x, state.h * path.c2y, state.w, state.h * path.endY);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  function drawClouds(ctx, night) {
+    if (night >= 0.85) return;
+    ctx.save();
+    ctx.globalAlpha = 1 - night * 0.9;
+    ctx.fillStyle = "rgba(255,255,255,0.42)";
+    const drift = (state.elapsed * 0.008) % (state.w + 200);
+    [
+      [100, 64, 36],
+      [340, 92, 28],
+      [580, 50, 44],
+      [820, 84, 26],
+    ].forEach(([cx, cy, r], i) => {
+      const x = ((cx - drift * (0.25 + i * 0.04)) % (state.w + 160)) - 80;
+      ctx.beginPath();
+      ctx.arc(x, cy, r, 0, Math.PI * 2);
+      ctx.arc(x + r * 0.7, cy + 5, r * 0.65, 0, Math.PI * 2);
+      ctx.arc(x - r * 0.55, cy + 6, r * 0.55, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  function drawSkyBirds(ctx, night) {
+    if (night >= 0.85) return;
+    ctx.save();
+    ctx.globalAlpha = (1 - night * 0.9) * 0.55;
+    ctx.strokeStyle = "rgba(30,30,40,0.6)";
+    ctx.lineWidth = 2;
+    const drift = (state.elapsed * 0.01) % (state.w + 200);
+    [
+      [0.12, 0.14, 1],
+      [0.2, 0.1, 0.7],
+      [0.62, 0.2, 1.15],
+      [0.7, 0.16, 0.8],
+    ].forEach(([fx, fy, scale], i) => {
+      const x = ((fx * state.w + drift * (0.3 + i * 0.05)) % (state.w + 120)) - 60;
+      const y = state.h * fy + Math.sin(state.elapsed * 0.001 + i) * 6;
+      const s = 7 * scale;
+      ctx.beginPath();
+      ctx.moveTo(x - s, y);
+      ctx.quadraticCurveTo(x - s * 0.4, y - s * 0.6, x, y);
+      ctx.quadraticCurveTo(x + s * 0.4, y - s * 0.6, x + s, y);
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  function drawAuroraRibbons(ctx, night) {
+    if (night <= 0.05) return;
+    ctx.save();
+    ctx.globalAlpha = night;
+    const bands = [
+      { color: "rgba(120,255,180,0.32)", amp: 26, freq: 0.012, yBase: 0.14, speed: 0.00018 },
+      { color: "rgba(160,120,255,0.26)", amp: 34, freq: 0.009, yBase: 0.2, speed: -0.00014 },
+      { color: "rgba(120,200,255,0.2)", amp: 20, freq: 0.015, yBase: 0.1, speed: 0.00022 },
+    ];
+    for (const b of bands) {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      for (let x = 0; x <= state.w; x += 24) {
+        const y = state.h * b.yBase + Math.sin(x * b.freq + state.elapsed * b.speed) * b.amp;
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(state.w, 0);
+      ctx.closePath();
+      ctx.fillStyle = b.color;
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function shadeColor(hex, percent) {
+    const num = parseInt(hex.slice(1), 16);
+    const clamp255 = (v) => Math.max(0, Math.min(255, v));
+    const r = clamp255((num >> 16) + percent);
+    const g = clamp255(((num >> 8) & 0xff) + percent);
+    const b = clamp255((num & 0xff) + percent);
+    return `rgb(${r},${g},${b})`;
+  }
+
+  function drawMoon(ctx, theme, night) {
+    const mx = state.w * 0.18;
+    const my = state.h * 0.16;
+    const r = 26;
+    ctx.save();
+    ctx.globalAlpha = night;
+
+    const body = ctx.createRadialGradient(mx - r * 0.35, my - r * 0.35, r * 0.15, mx, my, r);
+    body.addColorStop(0, "#fffdf4");
+    body.addColorStop(0.55, theme.moon);
+    body.addColorStop(1, shadeColor(theme.moon, -26));
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.arc(mx, my, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.save();
+    ctx.clip();
+    ctx.globalAlpha = night * 0.16;
+    ctx.fillStyle = shadeColor(theme.moon, -40);
+    [
+      [-0.32, -0.12, 0.24],
+      [0.18, 0.28, 0.17],
+      [0.34, -0.24, 0.13],
+    ].forEach(([ox, oy, rr]) => {
+      ctx.beginPath();
+      ctx.arc(mx + ox * r, my + oy * r, rr * r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+
+    ctx.restore();
+  }
+
+  function drawRetroSunDisc(ctx, theme, night) {
+    const cx = state.w * 0.5;
+    const cy = state.h * 0.56;
+    const r = Math.min(state.w, state.h) * 0.24;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.fillStyle = night > 0.5 ? theme.sunColor.night : theme.sunColor.day;
+    ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+    ctx.fillStyle = "rgba(40,10,50,0.35)";
+    for (let i = 0; i < 6; i++) {
+      const y = cy - r + r * 0.32 + i * (r * 0.32);
+      ctx.fillRect(cx - r, y, r * 2, r * 0.08);
+    }
+    ctx.restore();
+  }
+
+  function drawRetroGrid(ctx, theme, night) {
+    const groundTop = state.h * 0.6;
+    const g = ctx.createLinearGradient(0, groundTop, 0, state.h);
+    g.addColorStop(0, rgbStr(mixColor(theme.ground.day, theme.ground.night, night)));
+    g.addColorStop(1, "#05030a");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, groundTop, state.w, state.h - groundTop);
+
+    ctx.save();
+    ctx.globalAlpha = 0.55;
+    ctx.strokeStyle = theme.gridColorA;
+    ctx.lineWidth = 1.5;
+    const vanishX = state.w * 0.5;
+    const cols = 10;
+    for (let i = 0; i <= cols; i++) {
+      const t = i / cols;
+      const x = vanishX + (t - 0.5) * state.w * 1.6;
+      ctx.beginPath();
+      ctx.moveTo(vanishX, groundTop);
+      ctx.lineTo(x, state.h);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = theme.gridColorB;
+    const rows = 6;
+    for (let i = 1; i <= rows; i++) {
+      const t = i / rows;
+      const y = groundTop + (state.h - groundTop) * (t * t);
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(state.w, y);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 0.85;
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = theme.gridColorA;
+    ctx.beginPath();
+    ctx.moveTo(0, groundTop);
+    ctx.lineTo(state.w, groundTop);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawParticles(ctx, theme, night) {
+    const kind = theme.particle.type;
+    const alwaysOn = theme.particle.mode === "always";
+    if (!alwaysOn && night <= 0.05) return;
+    const baseAlpha = alwaysOn ? 1 : night;
+    ctx.save();
+    for (const p of state.particles) {
+      const sway = kind === "snow" || kind === "leaf" ? Math.sin(state.elapsed * 0.0015 * p.sway + p.tw) * 14 : 0;
+      const px = p.x * state.w + sway;
+      const py = p.y * state.h;
+      if (kind === "star" || kind === "glint") {
+        const tw = 0.4 + 0.6 * Math.abs(Math.sin(state.elapsed * p.sp + p.tw));
+        ctx.globalAlpha = baseAlpha * tw * (kind === "glint" ? 0.5 : 1);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(px, py, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (kind === "snow") {
+        ctx.globalAlpha = baseAlpha * 0.85;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(px, py, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (kind === "leaf") {
+        ctx.globalAlpha = baseAlpha * 0.9;
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.r, p.r * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+    ctx.restore();
+  }
+
   function drawBackground(ctx) {
+    const theme = state.bgTheme || BACKGROUND_THEMES[0];
     const night = state.nightBlend;
-    const dayTop = [106, 169, 212];
-    const dayMid = [169, 208, 230];
-    const dayLow = [207, 227, 181];
-    const dayBot = [181, 201, 138];
-    const nightTop = [12, 18, 42];
-    const nightMid = [24, 36, 72];
-    const nightLow = [34, 48, 70];
-    const nightBot = [28, 42, 48];
-    const mix = (a, b) =>
-      `rgb(${Math.round(a[0] + (b[0] - a[0]) * night)},${Math.round(
-        a[1] + (b[1] - a[1]) * night
-      )},${Math.round(a[2] + (b[2] - a[2]) * night)})`;
+    const [dTop, dMid, dLow, dBot] = theme.sky.day;
+    const [nTop, nMid, nLow, nBot] = theme.sky.night;
 
     const g = ctx.createLinearGradient(0, 0, 0, state.h);
-    g.addColorStop(0, mix(dayTop, nightTop));
-    g.addColorStop(0.42, mix(dayMid, nightMid));
-    g.addColorStop(0.7, mix(dayLow, nightLow));
-    g.addColorStop(1, mix(dayBot, nightBot));
+    g.addColorStop(0, rgbStr(mixColor(dTop, nTop, night)));
+    g.addColorStop(0.42, rgbStr(mixColor(dMid, nMid, night)));
+    g.addColorStop(0.7, rgbStr(mixColor(dLow, nLow, night)));
+    g.addColorStop(1, rgbStr(mixColor(dBot, nBot, night)));
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, state.w, state.h);
 
-    if (night > 0.05) {
-      ctx.save();
-      ctx.globalAlpha = night;
-      for (const s of state.stars) {
-        const tw = 0.45 + 0.55 * Math.abs(Math.sin(state.elapsed * s.sp + s.tw));
-        ctx.globalAlpha = night * tw;
-        ctx.fillStyle = "#fff8e8";
-        ctx.beginPath();
-        ctx.arc(s.x * state.w, s.y * state.h, s.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      // moon
-      ctx.globalAlpha = night * 0.95;
-      const mx = state.w * 0.18;
-      const my = state.h * 0.16;
-      ctx.fillStyle = "#f2f0de";
-      ctx.beginPath();
-      ctx.arc(mx, my, 28, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = mix(dayTop, nightTop);
-      ctx.beginPath();
-      ctx.arc(mx + 10, my - 4, 22, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+    if (theme.id === "aurora") {
+      drawSkyBirds(ctx, night);
+      drawAuroraRibbons(ctx, night);
+    }
+    if (theme.id === "retro") drawRetroSunDisc(ctx, theme, night);
+
+    if (night > 0.05 && theme.id !== "retro") drawMoon(ctx, theme, night);
+
+    if (theme.id === "retro") {
+      drawRetroGrid(ctx, theme, night);
+    } else {
+      drawHillLayer(ctx, theme.hillFar, night, HILL_FAR_PATH, theme.snowCap);
+      drawHillLayer(ctx, theme.hillNear, night, HILL_NEAR_PATH, theme.snowCap);
     }
 
-    ctx.fillStyle = night > 0.5 ? "#3d5a3a" : "#8fb56e";
-    ctx.beginPath();
-    ctx.moveTo(0, state.h * 0.74);
-    ctx.quadraticCurveTo(state.w * 0.28, state.h * 0.64, state.w * 0.52, state.h * 0.72);
-    ctx.quadraticCurveTo(state.w * 0.78, state.h * 0.8, state.w, state.h * 0.68);
-    ctx.lineTo(state.w, state.h);
-    ctx.lineTo(0, state.h);
-    ctx.fill();
+    drawParticles(ctx, theme, night);
 
-    ctx.fillStyle = night > 0.5 ? "#2f4a2e" : "#7a9f5c";
-    ctx.beginPath();
-    ctx.moveTo(0, state.h * 0.84);
-    ctx.quadraticCurveTo(state.w * 0.33, state.h * 0.76, state.w * 0.58, state.h * 0.86);
-    ctx.quadraticCurveTo(state.w * 0.82, state.h * 0.92, state.w, state.h * 0.82);
-    ctx.lineTo(state.w, state.h);
-    ctx.lineTo(0, state.h);
-    ctx.fill();
-
-    if (night < 0.85) {
-      ctx.globalAlpha = 1 - night * 0.9;
-      ctx.fillStyle = "rgba(255,255,255,0.42)";
-      const drift = (state.elapsed * 0.008) % (state.w + 200);
-      [
-        [100, 64, 36],
-        [340, 92, 28],
-        [580, 50, 44],
-        [820, 84, 26],
-      ].forEach(([cx, cy, r], i) => {
-        const x = ((cx - drift * (0.25 + i * 0.04)) % (state.w + 160)) - 80;
-        ctx.beginPath();
-        ctx.arc(x, cy, r, 0, Math.PI * 2);
-        ctx.arc(x + r * 0.7, cy + 5, r * 0.65, 0, Math.PI * 2);
-        ctx.arc(x - r * 0.55, cy + 6, r * 0.55, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      ctx.globalAlpha = 1;
-    }
+    if (theme.id === "meadow") drawClouds(ctx, night);
   }
 
   function drawBalloon(ctx, t) {
@@ -1954,8 +2244,8 @@
     state.active = true;
     state.mode = "idle";
     state.best = loadBest();
+    pickBackgroundTheme();
     resetRun();
-    buildStars();
     setOverlay(true, {
       kicker: "Arcade",
       title: "Quick Break",

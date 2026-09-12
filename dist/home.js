@@ -1,23 +1,68 @@
+const CERTIFICATE_ASSETS = {
+  "az-900": new URL("./assets/AZ-900.jpg", import.meta.url).href,
+  "ai-900": new URL("./assets/AI-900.jpg", import.meta.url).href,
+  databricks: new URL("./assets/databricks.webp", import.meta.url).href,
+  business: new URL("./assets/busicness.jpg", import.meta.url).href,
+  "yellow-belt": new URL("./assets/yellow.png", import.meta.url).href,
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   if ("paintWorklet" in CSS) {
     CSS.paintWorklet.addModule("squircle.js");
   }
 
   const container = document.querySelector(".card-grid");
+  const desktopGrid = window.matchMedia("(min-width: 768px)");
   container?.addEventListener(
     "wheel",
     (e) => {
-      if (e.deltaY) {
-        e.preventDefault();
-        container.scrollLeft += e.deltaY * 0.4;
-      }
+      if (!desktopGrid.matches || !e.deltaY) return;
+      e.preventDefault();
+      container.scrollLeft += e.deltaY * 0.4;
     },
     { passive: false }
   );
 
   initClickSound();
   initChannelPopup();
+  initCertificationLinks();
+  initMailLinks();
 });
+
+function initCertificationLinks() {
+  document.querySelectorAll("[data-cert-id]").forEach((link) => {
+    const assetUrl = CERTIFICATE_ASSETS[link.dataset.certId];
+    if (assetUrl) link.href = assetUrl;
+  });
+}
+
+function initMailLinks() {
+  document.querySelectorAll("[data-mail-link], a[href^='mailto:']").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const mailto = link.getAttribute("href");
+      const gmail = link.getAttribute("data-gmail");
+      if (!mailto) return;
+
+      let handedOff = false;
+      const markHandedOff = () => {
+        handedOff = true;
+      };
+      window.addEventListener("blur", markHandedOff, { once: true });
+      document.addEventListener("visibilitychange", markHandedOff, { once: true });
+
+      window.location.href = mailto;
+
+      window.setTimeout(() => {
+        window.removeEventListener("blur", markHandedOff);
+        document.removeEventListener("visibilitychange", markHandedOff);
+        if (handedOff || document.hidden || !gmail) return;
+        window.open(gmail, "_blank", "noopener,noreferrer");
+      }, 700);
+    });
+  });
+}
 
 const CHANNEL_ORDER = ["about", "story", "certs", "arcade"];
 
@@ -39,8 +84,8 @@ const CHANNEL_META = {
   },
   arcade: {
     kicker: "play",
-    title: "Zap Gallery",
-    dock: "Zap Gallery",
+    title: "Quick Break",
+    dock: "Quick Break",
   },
 };
 
@@ -80,11 +125,27 @@ function initChannelPopup() {
   const panel = popup.querySelector("[data-popup-panel]");
   const kicker = popup.querySelector("[data-popup-kicker]");
   const title = popup.querySelector("[data-popup-title]");
+  const popupBody = popup.querySelector("[data-popup-body]");
   const dockLabel = dock.querySelector("[data-dock-label]");
   const homeBtn = dock.querySelector("[data-dock-home]");
   const nextBtn = dock.querySelector("[data-dock-next]");
   const views = popup.querySelectorAll("[data-view]");
   const channelBtns = document.querySelectorAll("[data-channel]");
+
+  if (popupBody) {
+    let scrollHideTimer = null;
+    popupBody.addEventListener(
+      "scroll",
+      () => {
+        popupBody.classList.add("is-scrolling");
+        window.clearTimeout(scrollHideTimer);
+        scrollHideTimer = window.setTimeout(() => {
+          popupBody.classList.remove("is-scrolling");
+        }, 700);
+      },
+      { passive: true }
+    );
+  }
 
   let open = false;
   let animating = false;
@@ -125,7 +186,10 @@ function initChannelPopup() {
     activeChannel = id;
     kicker.textContent = meta.kicker;
     title.textContent = meta.title;
-    if (dockLabel) dockLabel.textContent = meta.dock;
+    if (dock.classList.contains("is-channel")) {
+      if (dockLabel) dockLabel.textContent = meta.dock;
+      dock.classList.toggle("is-about", id === "about");
+    }
   };
 
   const syncArcade = (id) => {
@@ -138,7 +202,33 @@ function initChannelPopup() {
 
   const setDockChannelMode = (on) => {
     dock.classList.toggle("is-channel", on);
-    if (!on && dockLabel) dockLabel.textContent = HOME_DOCK_LABEL;
+    if (on) {
+      const meta = CHANNEL_META[activeChannel];
+      if (meta && dockLabel) dockLabel.textContent = meta.dock;
+      dock.classList.toggle("is-about", activeChannel === "about");
+    } else {
+      dock.classList.remove("is-about");
+      if (dockLabel) dockLabel.textContent = HOME_DOCK_LABEL;
+    }
+  };
+
+  const revealDockWhenPanelReachesIt = (id) => {
+    if (reduceMotion) {
+      setDockChannelMode(true);
+      return;
+    }
+
+    const dockTop = dock.getBoundingClientRect().top;
+    const checkPosition = () => {
+      if (!animating || activeChannel !== id) return;
+      if (panel.getBoundingClientRect().bottom >= dockTop) {
+        setDockChannelMode(true);
+        return;
+      }
+      window.requestAnimationFrame(checkPosition);
+    };
+
+    window.requestAnimationFrame(checkPosition);
   };
 
   const waitForTransition = () =>
@@ -166,7 +256,6 @@ function initChannelPopup() {
     originRect = btn.getBoundingClientRect();
     setMeta(id);
     showView(id);
-    setDockChannelMode(true);
 
     popup.hidden = false;
     popup.setAttribute("aria-hidden", "false");
@@ -182,9 +271,13 @@ function initChannelPopup() {
       const end = expandedMetrics();
       placePanel(end);
       panel.classList.add("is-expanded");
+      revealDockWhenPanelReachesIt(id);
     });
 
     await waitForTransition();
+    if (!dock.classList.contains("is-channel")) {
+      setDockChannelMode(true);
+    }
     popup.classList.add("is-ready");
     open = true;
     animating = false;
