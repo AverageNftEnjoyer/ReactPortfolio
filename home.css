@@ -911,6 +911,7 @@ button.card {
   flex-shrink: 0;
   cursor: auto;
   background-color: #eeeeee;
+  transition: background-color 0.6s ease;
 }
 .dock-shell.is-channel {
   background-color: #f7f7f7;
@@ -928,6 +929,7 @@ button.card {
   flex: 1 1 auto;
   background-color: #dbdcdd;
   height: 64px;
+  transition: background-color 0.6s ease;
 }
 .dock-notch {
   flex: 0 0 auto;
@@ -935,10 +937,15 @@ button.card {
   height: 64px;
   max-width: none;
   display: block;
-  vertical-align: bottom;
-  object-fit: fill;
-  object-position: bottom;
   margin: 0 -1px;
+  background-color: #dbdcdd;
+  -webkit-mask-image: url("assets/notch-edge.svg");
+  mask-image: url("assets/notch-edge.svg");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  transition: background-color 0.6s ease;
 }
 .dock-notch.mirror {
   transform: scaleX(-1);
@@ -968,6 +975,16 @@ button.card {
   padding: 8px 0 22px;
   display: flex;
   justify-content: center;
+  transition: background-color 0.6s ease;
+}
+.dock-shell.is-channel.is-arcade,
+.dock-shell.is-channel.is-arcade .dock-fill,
+.dock-shell.is-channel.is-arcade .dock-notch,
+.dock-shell.is-channel.is-arcade .dock-base {
+  background-color: transparent;
+}
+.dock-shell.is-arcade .dock-label {
+  visibility: hidden;
 }
 .dock-base .dock-disclaimer {
   margin-top: 0;
@@ -1156,11 +1173,11 @@ button.card {
   display: flex;
   flex-direction: column;
   background-color: #f7f7f7;
-  padding-bottom: 150px;
+  padding-bottom: 104px;
 }
 @media (min-width: 640px) {
   .channel-popup-showcase {
-    padding-bottom: 200px;
+    padding-bottom: 134px;
   }
 }
 
@@ -1945,8 +1962,9 @@ img.about-photo-secondary {
   flex-direction: column;
 }
 .channel-popup.is-arcade .channel-popup-showcase {
-  background: #7eb6d9;
+  background: var(--zap-shell-bg, #7eb6d9);
   padding-bottom: 0;
+  transition: background-color 0.6s ease;
 }
 
 .channel-view-arcade {
@@ -1961,7 +1979,8 @@ img.about-photo-secondary {
   inset: 0;
   overflow: hidden;
   cursor: none;
-  background: #7eb6d9;
+  background: var(--zap-shell-bg, #7eb6d9);
+  transition: background-color 0.6s ease;
 }
 .zap-shell .pill-btn,
 .zap-shell .zap-overlay {
@@ -2125,6 +2144,31 @@ img.about-photo-secondary {
   font-weight: 500;
   line-height: 1.45;
   color: rgba(255, 255, 255, 0.88);
+}
+.zap-overlay-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.zap-map-btn {
+  padding: 8px 20px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.38);
+  color: #fff;
+  font-family: "SpaceGrotesk", sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+.zap-map-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+.zap-map-btn:active {
+  transform: translateY(0);
 }
 .pill-btn {
   min-width: 132px;

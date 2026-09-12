@@ -327,8 +327,13 @@
                       <div class="zap-overlay-card">
                         <p class="zap-overlay-kicker" data-zap-kicker>Arcade</p>
                         <h3 class="zap-overlay-title" data-zap-title>Quick Break</h3>
-                        <p class="zap-overlay-hint" data-zap-hint>Skill run: sparse targets, combo multipliers, then a teleporting boss.</p>
-                        <button class="pill-btn zap-start" type="button" data-zap-start>Play</button>
+                        <p class="zap-overlay-hint" data-zap-hint>Hit the targets, combo multipliers.</p>
+                        <div class="zap-overlay-actions">
+                          <button class="pill-btn zap-start" type="button" data-zap-start>Play</button>
+                          <button class="zap-map-btn" type="button" data-zap-map aria-label="Change background map">
+                            <span data-zap-map-label>Map: Meadow</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -348,11 +353,11 @@
         </button>
         <div class="dock-bar">
           <div class="dock-fill"></div>
-          <img class="dock-notch mirror" src="assets/notch-edge.svg" alt="" />
+          <span class="dock-notch mirror" aria-hidden="true"></span>
           <div class="dock-label-wrap">
             <p class="dock-label" data-dock-label>Jack Pastor</p>
           </div>
-          <img class="dock-notch" src="assets/notch-edge.svg" alt="" />
+          <span class="dock-notch" aria-hidden="true"></span>
           <div class="dock-fill"></div>
         </div>
         <div class="dock-base">

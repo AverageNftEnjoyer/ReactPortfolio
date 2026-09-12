@@ -80,7 +80,7 @@ const CHANNEL_META = {
   certs: {
     kicker: "credentials",
     title: "Certifications",
-    dock: "Certifications",
+    dock: "",
   },
   arcade: {
     kicker: "play",
@@ -189,6 +189,7 @@ function initChannelPopup() {
     if (dock.classList.contains("is-channel")) {
       if (dockLabel) dockLabel.textContent = meta.dock;
       dock.classList.toggle("is-about", id === "about");
+      dock.classList.toggle("is-arcade", id === "arcade");
     }
   };
 
@@ -206,8 +207,9 @@ function initChannelPopup() {
       const meta = CHANNEL_META[activeChannel];
       if (meta && dockLabel) dockLabel.textContent = meta.dock;
       dock.classList.toggle("is-about", activeChannel === "about");
+      dock.classList.toggle("is-arcade", activeChannel === "arcade");
     } else {
-      dock.classList.remove("is-about");
+      dock.classList.remove("is-about", "is-arcade");
       if (dockLabel) dockLabel.textContent = HOME_DOCK_LABEL;
     }
   };
