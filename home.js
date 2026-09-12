@@ -17,7 +17,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initClickSound();
   initChannelPopup();
+  initMailLinks();
 });
+
+function initMailLinks() {
+  document.querySelectorAll("[data-mail-link], a[href^='mailto:']").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const mailto = link.getAttribute("href");
+      const gmail = link.getAttribute("data-gmail");
+      if (!mailto) return;
+
+      let handedOff = false;
+      const markHandedOff = () => {
+        handedOff = true;
+      };
+      window.addEventListener("blur", markHandedOff, { once: true });
+      document.addEventListener("visibilitychange", markHandedOff, { once: true });
+
+      window.location.href = mailto;
+
+      window.setTimeout(() => {
+        window.removeEventListener("blur", markHandedOff);
+        document.removeEventListener("visibilitychange", markHandedOff);
+        if (handedOff || document.hidden || !gmail) return;
+        window.open(gmail, "_blank", "noopener,noreferrer");
+      }, 700);
+    });
+  });
+}
 
 const CHANNEL_ORDER = ["about", "story", "certs", "arcade"];
 
@@ -80,11 +109,27 @@ function initChannelPopup() {
   const panel = popup.querySelector("[data-popup-panel]");
   const kicker = popup.querySelector("[data-popup-kicker]");
   const title = popup.querySelector("[data-popup-title]");
+  const popupBody = popup.querySelector("[data-popup-body]");
   const dockLabel = dock.querySelector("[data-dock-label]");
   const homeBtn = dock.querySelector("[data-dock-home]");
   const nextBtn = dock.querySelector("[data-dock-next]");
   const views = popup.querySelectorAll("[data-view]");
   const channelBtns = document.querySelectorAll("[data-channel]");
+
+  if (popupBody) {
+    let scrollHideTimer = null;
+    popupBody.addEventListener(
+      "scroll",
+      () => {
+        popupBody.classList.add("is-scrolling");
+        window.clearTimeout(scrollHideTimer);
+        scrollHideTimer = window.setTimeout(() => {
+          popupBody.classList.remove("is-scrolling");
+        }, 700);
+      },
+      { passive: true }
+    );
+  }
 
   let open = false;
   let animating = false;
