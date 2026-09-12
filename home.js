@@ -170,7 +170,10 @@ function initChannelPopup() {
     activeChannel = id;
     kicker.textContent = meta.kicker;
     title.textContent = meta.title;
-    if (dockLabel) dockLabel.textContent = meta.dock;
+    if (dock.classList.contains("is-channel")) {
+      if (dockLabel) dockLabel.textContent = meta.dock;
+      dock.classList.toggle("is-about", id === "about");
+    }
   };
 
   const syncArcade = (id) => {
@@ -183,7 +186,33 @@ function initChannelPopup() {
 
   const setDockChannelMode = (on) => {
     dock.classList.toggle("is-channel", on);
-    if (!on && dockLabel) dockLabel.textContent = HOME_DOCK_LABEL;
+    if (on) {
+      const meta = CHANNEL_META[activeChannel];
+      if (meta && dockLabel) dockLabel.textContent = meta.dock;
+      dock.classList.toggle("is-about", activeChannel === "about");
+    } else {
+      dock.classList.remove("is-about");
+      if (dockLabel) dockLabel.textContent = HOME_DOCK_LABEL;
+    }
+  };
+
+  const revealDockWhenPanelReachesIt = (id) => {
+    if (reduceMotion) {
+      setDockChannelMode(true);
+      return;
+    }
+
+    const dockTop = dock.getBoundingClientRect().top;
+    const checkPosition = () => {
+      if (!animating || activeChannel !== id) return;
+      if (panel.getBoundingClientRect().bottom >= dockTop) {
+        setDockChannelMode(true);
+        return;
+      }
+      window.requestAnimationFrame(checkPosition);
+    };
+
+    window.requestAnimationFrame(checkPosition);
   };
 
   const waitForTransition = () =>
@@ -211,7 +240,6 @@ function initChannelPopup() {
     originRect = btn.getBoundingClientRect();
     setMeta(id);
     showView(id);
-    setDockChannelMode(true);
 
     popup.hidden = false;
     popup.setAttribute("aria-hidden", "false");
@@ -227,9 +255,13 @@ function initChannelPopup() {
       const end = expandedMetrics();
       placePanel(end);
       panel.classList.add("is-expanded");
+      revealDockWhenPanelReachesIt(id);
     });
 
     await waitForTransition();
+    if (!dock.classList.contains("is-channel")) {
+      setDockChannelMode(true);
+    }
     popup.classList.add("is-ready");
     open = true;
     animating = false;
