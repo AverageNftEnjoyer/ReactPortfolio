@@ -913,8 +913,9 @@ button.card {
   background-color: #eeeeee;
   transition: background-color 0.6s ease;
 }
+/* Transparent so popup content stays visible through the valley between the grey wings. */
 .dock-shell.is-channel {
-  background-color: #f7f7f7;
+  background-color: transparent;
 }
 
 .dock-bar {
@@ -984,6 +985,9 @@ button.card {
   background-color: transparent;
 }
 .dock-shell.is-arcade .dock-label {
+  visibility: hidden;
+}
+.dock-shell.is-story .dock-label {
   visibility: hidden;
 }
 .dock-base .dock-disclaimer {
@@ -1173,11 +1177,12 @@ button.card {
   display: flex;
   flex-direction: column;
   background-color: #f7f7f7;
-  padding-bottom: 104px;
+  /* Scroll clearance so the last line can rise above the dock; content itself runs behind it. */
+  --dock-clear: 104px;
 }
 @media (min-width: 640px) {
   .channel-popup-showcase {
-    padding-bottom: 134px;
+    --dock-clear: 134px;
   }
 }
 
@@ -1211,7 +1216,7 @@ button.card {
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-gutter: stable;
-  padding: 22px 28px 28px;
+  padding: 22px 28px calc(28px + var(--dock-clear));
   opacity: 0;
   transform: translateY(16px);
   transition: opacity 0.4s ease 0.28s, transform 0.4s ease 0.28s;
@@ -1293,8 +1298,7 @@ button.card {
   color: rgba(1, 3, 19, 0.9);
 }
 .about-hero-copy p,
-.about-section p,
-.channel-story p {
+.about-section p {
   font-size: 1.05rem;
   line-height: 1.7;
   font-weight: 500;
@@ -1436,16 +1440,326 @@ img.about-photo-secondary {
   font-weight: 600;
   color: rgba(1, 3, 19, 0.55);
 }
-.channel-story {
+.experience-shell {
+  width: min(100%, 1560px);
+  margin: 0 auto;
+  padding-bottom: 12px;
+}
+.experience-list {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  max-width: 42rem;
+  gap: 28px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
-.channel-story-lead {
-  font-size: 1.25rem !important;
-  font-weight: 600 !important;
-  color: rgba(1, 3, 19, 0.9) !important;
+.experience-role {
+  /* Wesco green, shared by both Wesco roles */
+  --experience-accent: #00aa13;
+  --experience-accent-next: #00aa13;
+  position: relative;
+}
+.experience-role:nth-child(2) {
+  --experience-accent-next: #6d70c6;
+}
+.experience-role:nth-child(3) {
+  --experience-accent: #6d70c6;
+}
+.experience-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(22, 36, 44, 0.1);
+  box-shadow:
+    0 12px 34px -28px rgba(22, 36, 44, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+.experience-card-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  min-height: 104px;
+  padding: 20px 26px;
+  border-bottom: 1px solid rgba(22, 36, 44, 0.08);
+}
+.experience-title-group {
+  min-width: 0;
+}
+.experience-company,
+.experience-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.095em;
+  text-transform: uppercase;
+}
+.experience-company {
+  margin-bottom: 5px;
+  color: var(--experience-accent);
+}
+.experience-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--experience-accent);
+  text-decoration: none;
+}
+.experience-link:hover,
+.experience-link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.experience-title-group h4 {
+  font-size: clamp(1.25rem, 2.1vw, 1.65rem);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: rgba(1, 3, 19, 0.9);
+}
+.experience-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  text-align: right;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: rgba(1, 3, 19, 0.58);
+}
+.experience-card-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(250px, 0.75fr);
+}
+.experience-narrative {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding: 26px 30px 30px;
+}
+.experience-block {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.experience-label {
+  color: rgba(1, 3, 19, 0.42);
+}
+.experience-placeholder-copy {
+  max-width: 680px;
+  font-size: 0.96rem;
+  font-weight: 500;
+  line-height: 1.65;
+  color: rgba(1, 3, 19, 0.72);
+}
+.experience-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.experience-bullets li {
+  position: relative;
+  padding-left: 20px;
+  font-size: 0.91rem;
+  font-weight: 500;
+  line-height: 1.55;
+  color: rgba(1, 3, 19, 0.7);
+}
+.experience-bullets li::before {
+  content: "";
+  position: absolute;
+  top: 0.64em;
+  left: 1px;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--experience-accent);
+  transform: rotate(45deg);
+}
+.experience-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 26px;
+  background:
+    linear-gradient(145deg, rgba(240, 243, 245, 0.88), rgba(247, 247, 247, 0.5));
+  border-left: 1px solid rgba(22, 36, 44, 0.08);
+}
+.experience-skills {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+/* The number column is only as wide as the widest number; stats share it via subgrid so their text lines up. */
+.experience-impact {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 10px;
+  row-gap: 11px;
+}
+.experience-impact > .experience-label {
+  grid-column: 1 / -1;
+}
+.experience-stat {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  grid-template-columns: subgrid;
+  column-gap: 10px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(22, 36, 44, 0.08);
+}
+.experience-stat strong {
+  font-size: 1.24rem;
+  letter-spacing: -0.035em;
+  color: var(--experience-accent);
+}
+.experience-stat span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: rgba(1, 3, 19, 0.54);
+}
+.experience-skills ul {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.experience-skills li {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(22, 36, 44, 0.09);
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: rgba(1, 3, 19, 0.62);
+}
+
+@media (min-width: 1180px) {
+  .experience-list {
+    gap: 38px;
+    padding: 10px 0;
+  }
+  .experience-role {
+    width: 58%;
+  }
+  .experience-role:nth-child(odd) {
+    align-self: flex-start;
+    --experience-connector-dir: to bottom right;
+  }
+  .experience-role:nth-child(even) {
+    align-self: flex-end;
+    --experience-connector-dir: to bottom left;
+  }
+  /* Connector: leaves the side of a card at mid-height, runs outward, then drops onto
+     the top edge of the next card (the list gap is 38px). ::after draws the path as a
+     gradient ring masked down to two sides; ::before is the socket where it lands. */
+  .experience-role::after {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    top: 50%;
+    box-sizing: border-box;
+    width: 48%;
+    height: calc(50% + 38px);
+    border: 0 solid transparent;
+    border-top-width: 2px;
+    background: linear-gradient(
+        var(--experience-connector-dir),
+        var(--experience-accent),
+        var(--experience-accent-next)
+      )
+      border-box;
+    -webkit-mask:
+      linear-gradient(#000 0 0) padding-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) padding-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .experience-role::before {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    top: calc(100% + 38px);
+    box-sizing: border-box;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--experience-accent-next);
+    border-radius: 50%;
+    background: #f7f7f7;
+    box-shadow: 0 0 0 4px
+      color-mix(in srgb, var(--experience-accent-next) 18%, transparent);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .experience-role:nth-child(odd)::after {
+    left: 100%;
+    border-right-width: 2px;
+    border-top-right-radius: 22px;
+  }
+  .experience-role:nth-child(odd)::before {
+    left: calc(148% - 1px);
+  }
+  .experience-role:nth-child(even)::after {
+    right: 100%;
+    border-left-width: 2px;
+    border-top-left-radius: 22px;
+  }
+  .experience-role:nth-child(even)::before {
+    left: calc(-48% + 1px);
+  }
+  .experience-role:last-child::before,
+  .experience-role:last-child::after {
+    display: none;
+  }
+  .experience-card {
+    z-index: 1;
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+  }
+  .experience-card:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 20px 42px -30px rgba(22, 36, 44, 0.62),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+}
+
+@media (max-width: 760px) {
+  .experience-card-header {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 20px 22px;
+  }
+  .experience-meta {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .experience-card-body {
+    grid-template-columns: 1fr;
+  }
+  .experience-narrative,
+  .experience-sidebar {
+    padding: 22px;
+  }
+  .experience-sidebar {
+    border-top: 1px solid rgba(22, 36, 44, 0.08);
+    border-left: 0;
+  }
 }
 
 .certifications-shell {
@@ -1963,7 +2277,6 @@ img.about-photo-secondary {
 }
 .channel-popup.is-arcade .channel-popup-showcase {
   background: var(--zap-shell-bg, #7eb6d9);
-  padding-bottom: 0;
   transition: background-color 0.6s ease;
 }
 
@@ -2320,7 +2633,7 @@ body.zap-aiming .zap-shell {
     padding: 20px 18px 0;
   }
   .channel-popup-body {
-    padding: 16px 18px 22px;
+    padding: 16px 18px calc(22px + var(--dock-clear));
   }
   .channel-popup.is-arcade .channel-popup-body {
     padding: 0;

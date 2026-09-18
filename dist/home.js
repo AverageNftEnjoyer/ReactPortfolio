@@ -73,9 +73,9 @@ const CHANNEL_META = {
     dock: "About Me",
   },
   story: {
-    kicker: "journal",
-    title: "My Career Path",
-    dock: "My Career Path",
+    kicker: "career",
+    title: "Work Experience",
+    dock: "",
   },
   certs: {
     kicker: "credentials",
@@ -189,6 +189,7 @@ function initChannelPopup() {
     if (dock.classList.contains("is-channel")) {
       if (dockLabel) dockLabel.textContent = meta.dock;
       dock.classList.toggle("is-about", id === "about");
+      dock.classList.toggle("is-story", id === "story");
       dock.classList.toggle("is-arcade", id === "arcade");
     }
   };
@@ -207,9 +208,10 @@ function initChannelPopup() {
       const meta = CHANNEL_META[activeChannel];
       if (meta && dockLabel) dockLabel.textContent = meta.dock;
       dock.classList.toggle("is-about", activeChannel === "about");
+      dock.classList.toggle("is-story", activeChannel === "story");
       dock.classList.toggle("is-arcade", activeChannel === "arcade");
     } else {
-      dock.classList.remove("is-about", "is-arcade");
+      dock.classList.remove("is-about", "is-story", "is-arcade");
       if (dockLabel) dockLabel.textContent = HOME_DOCK_LABEL;
     }
   };
