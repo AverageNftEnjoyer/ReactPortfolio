@@ -789,6 +789,67 @@ img {
   transform: translateY(0);
 }
 
+/* face off card — same type scale as nova / querylens */
+.card-content.card-faceoff {
+  position: relative;
+  z-index: 0;
+  height: 100%;
+  background-color: #010313;
+}
+.card-content.card-faceoff::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("assets/faceoff.webp");
+  background-size: cover;
+  background-position: center;
+  transition: transform 400ms ease;
+}
+.card:hover .card-content.card-faceoff::after {
+  transform: scale(1.08);
+}
+/* bottom shade keeps the label readable over the art */
+.card-content.card-faceoff::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(rgba(1, 3, 19, 0) 45%, rgba(1, 3, 19, 0.75));
+}
+.card-faceoff-label {
+  position: absolute;
+  z-index: 1;
+  bottom: 1rem;
+  left: 22px;
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  transition: transform 200ms ease;
+}
+.card:hover .card-faceoff-label {
+  transform: translateY(-0.85rem);
+}
+.card-faceoff-sub {
+  position: absolute;
+  z-index: 1;
+  bottom: 1rem;
+  left: 22px;
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+.card:hover .card-faceoff-sub {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* placeholders */
 .card-placeholder-label {
   margin: auto;
@@ -880,6 +941,7 @@ img {
 .card-certs-sub,
 .card-querylens-sub,
 .card-nova-sub,
+.card-faceoff-sub,
 .card-reveal .card-subtitle {
   font-size: 0.85rem;
   font-weight: 600;
@@ -2569,7 +2631,8 @@ body.zap-aiming .zap-shell {
   .card-resume-label,
   .card-certs-label,
   .card-querylens-label,
-  .card-nova-label {
+  .card-nova-label,
+  .card-faceoff-label {
     transform: translateY(-0.85rem);
   }
   .card-github-sub,
@@ -2577,7 +2640,8 @@ body.zap-aiming .zap-shell {
   .card-resume-sub,
   .card-certs-sub,
   .card-querylens-sub,
-  .card-nova-sub {
+  .card-nova-sub,
+  .card-faceoff-sub {
     opacity: 1;
     transform: none;
   }
