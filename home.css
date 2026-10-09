@@ -801,22 +801,14 @@ img {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background-image: url("assets/faceoff.webp");
+  /* full-bleed 16:9 banner; the F monogram sits dead center so any crop is safe */
+  background-image: url("assets/faceoff-banner.webp");
   background-size: cover;
   background-position: center;
   transition: transform 400ms ease;
 }
 .card:hover .card-content.card-faceoff::after {
   transform: scale(1.08);
-}
-/* bottom shade keeps the label readable over the art */
-.card-content.card-faceoff::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: linear-gradient(rgba(1, 3, 19, 0) 45%, rgba(1, 3, 19, 0.75));
 }
 .card-faceoff-label {
   position: absolute;
