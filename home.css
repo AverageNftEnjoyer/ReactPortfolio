@@ -801,23 +801,14 @@ img {
   position: absolute;
   inset: 0;
   z-index: -1;
-  /* 2:1 art in a 16:9 card: cover trims ~6% off each side, clear of the F (starts ~11% in) */
-  background-image: url("assets/faceofflogo.webp");
+  /* 16:9 logo art, centered with an empty bottom edge, so the label never touches it */
+  background-image: url("assets/faceoff.webp");
   background-size: cover;
   background-position: center;
   transition: transform 400ms ease;
 }
 .card:hover .card-content.card-faceoff::after {
-  transform: scale(1.05);
-}
-/* the F's bottom tip reaches the label corner, so shade the bottom for readability */
-.card-content.card-faceoff::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: linear-gradient(rgba(1, 3, 19, 0) 55%, rgba(1, 3, 19, 0.7));
+  transform: scale(1.08);
 }
 .card-faceoff-label {
   position: absolute;
